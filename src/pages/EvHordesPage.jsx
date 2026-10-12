@@ -13,20 +13,51 @@ const EV_MAX = 252;
 // Couleur de l'interface selon la stat choisie
 const STAT_HUE = { hp: 25, atk: 55, def: 95, spa: 250, spd: 150, spe: 340 };
 
-// Spots de horde : un par lieu et par méthode (herbes, grotte, surf…), avec toutes les espèces possibles
+// Conditions d'un lieu, lues dans son nom : « Route 39 (Night/Season1) » → nuit, été
+const TIMES = ["Morning", "Day", "Night"];
+function condOf(en) {
+  const tags = (en.match(/\(([^)]*)\)/)?.[1] || "").split("/");
+  const times = tags.filter(x => TIMES.includes(x));
+  const season = tags.find(x => /^Season\d$/.test(x));
+  return { times: times.length ? times : TIMES, season: season ? +season.slice(6) : null };
+}
+const fits = (cond, time, season) => (time === "" || cond.times.includes(time)) && (season === "" || cond.season === null || cond.season === +season);
+
+// Spots de horde : un par lieu (toutes variantes jour/nuit/saison réunies) et par méthode
 const SPOTS = (() => {
   const map = new Map();
   for (const p of ALL) {
     for (const [loc, method, rarity, min, max] of p.locs) {
       if (rarity !== HORDE) continue;
-      const key = `${loc}#${method}`;
-      if (!map.has(key)) map.set(key, { key, loc, method, region: LOCATIONS[loc].region, species: [] });
+      const L = LOCATIONS[loc];
+      const key = `${L.region}#${baseName(L.en)}#${method}`;
+      if (!map.has(key)) map.set(key, { key, loc, method, region: L.region, variants: new Set(), species: new Map() });
       const spot = map.get(key);
-      if (!spot.species.some(s => s.p.id === p.id)) spot.species.push({ p, min, max });
+      spot.variants.add(loc);
+      if (!spot.species.has(p.id)) spot.species.set(p.id, { p, min, max, locs: [] });
+      const sp = spot.species.get(p.id);
+      sp.min = Math.min(sp.min, min); sp.max = Math.max(sp.max, max);
+      sp.locs.push(loc);
     }
   }
-  return [...map.values()].map(s => ({ ...s, center: centerInfo(s.loc), hms: hmsFor(s.loc, s.method) }));
+  return [...map.values()].map(s => {
+    const species = [...s.species.values()].map(sp => {
+      const conds = [...new Set(sp.locs)].map(l => condOf(LOCATIONS[l].en));
+      return { ...sp, conds };
+    });
+    return { ...s, species, center: centerInfo(s.loc), hms: hmsFor(s.loc, s.method) };
+  });
 })();
+
+// Libellé court des conditions d'une espèce : « Nuit · Été, Automne »
+function condLabel(conds, t) {
+  const times = new Set(conds.flatMap(c => c.times));
+  const seasons = conds.some(c => c.season === null) ? null : [...new Set(conds.map(c => c.season))].sort();
+  const parts = [];
+  if (times.size < 3) parts.push(TIMES.filter(x => times.has(x)).map(x => t.timesOfDay[x]).join(", "));
+  if (seasons && seasons.length < 4) parts.push(seasons.length === 3 ? t.exceptSeason(t.seasons[[0, 1, 2, 3].find(i => !seasons.includes(i))]) : seasons.map(i => t.seasons[i]).join(", "));
+  return parts.join(" · ");
+}
 
 // Distance au Centre Pokémon le plus proche, en nombre de zones à traverser
 function centerInfo(locKey) {
@@ -50,6 +81,8 @@ export default function EvHordesPage() {
   const [leppa, setLeppa] = useState(""); // "" tous, "no" sans Baies Mepo, "yes" avec
   const [noHm, setNoHm] = useState(false);
   const [sort, setSort] = useState("yield");
+  const [season, setSeason] = useState("");
+  const [time, setTime] = useState("");
 
   useEffect(() => {
     document.documentElement.style.setProperty("--h", STAT_HUE[stat]);
@@ -60,10 +93,11 @@ export default function EvHordesPage() {
     return SPOTS
       .filter(s => region === "" || s.region === +region)
       .map(s => {
-        const good = s.species.filter(x => x.p.yields[stat]);
+        const species = s.species.filter(x => x.conds.some(c => fits(c, time, season)));
+        const good = species.filter(x => x.p.yields[stat]);
         if (!good.length) return null;
         const yields = good.map(x => x.p.yields[stat]);
-        return { ...s, good, share: good.length / s.species.length, best: Math.max(...yields), worst: Math.min(...yields), minLv: Math.min(...good.map(x => x.min)) };
+        return { ...s, species, good, share: good.length / species.length, best: Math.max(...yields), worst: Math.min(...yields), minLv: Math.min(...good.map(x => x.min)) };
       })
       .filter(Boolean)
       .filter(c => !onlyPure || c.share === 1)
@@ -71,7 +105,7 @@ export default function EvHordesPage() {
       .filter(c => !noHm || c.hms.every(h => h.opt))
       .sort((a, b) => (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
         || b.share - a.share || b.best - a.best || a.minLv - b.minLv);
-  }, [stat, region, onlyPure, leppa, noHm, sort]);
+  }, [stat, region, onlyPure, leppa, noHm, sort, season, time]);
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-7 px-8 pb-16 pt-[22px] max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -112,6 +146,20 @@ export default function EvHordesPage() {
             active={region !== ""}
             onChange={setRegion}
             options={[{ value: "", label: t.allRegions }, { sep: true }, ...t.regions.map((r, i) => ({ value: String(i), label: r }))]}
+          />
+          <Dropdown
+            label={t.seasonLbl}
+            value={season}
+            active={season !== ""}
+            onChange={setSeason}
+            options={[{ value: "", label: t.allSeasons }, { sep: true }, ...t.seasons.map((x, i) => ({ value: String(i), label: x }))]}
+          />
+          <Dropdown
+            label={t.timeLbl}
+            value={time}
+            active={time !== ""}
+            onChange={setTime}
+            options={[{ value: "", label: t.allTimes }, { sep: true }, ...TIMES.map(x => ({ value: x, label: t.timesOfDay[x] }))]}
           />
           <button
             type="button"
@@ -174,7 +222,7 @@ function SpotCard({ c, stat }) {
       <article className="grid h-full content-start gap-3 rounded-2xl border border-line bg-panel p-4 transition-shadow hover:shadow-soft">
         <header className="flex items-start justify-between gap-3">
           <a href={href({ page: "location", key: c.loc })} className="group min-w-0">
-            <h2 className="text-balance text-[1.02rem] font-medium leading-snug group-hover:text-accent-ink">{locName(loc, lang)}</h2>
+            <h2 className="text-balance text-[1.02rem] font-medium leading-snug group-hover:text-accent-ink">{baseName(locName(loc, lang))}</h2>
             <p className="text-[0.78rem] text-muted">{t.regions[loc.region]} · {t.methods[METHODS[c.method]] || METHODS[c.method]}</p>
           </a>
           <span className={`flex-none rounded-full px-2.5 py-1 text-[0.72rem] font-medium ${pure ? "bg-accent text-panel" : "bg-sunk text-muted"}`}>
@@ -197,13 +245,17 @@ function SpotCard({ c, stat }) {
         <CenterRow c={c} region={loc.region} />
 
         <ul className="grid gap-1">
-          {c.species.map(({ p, min, max }) => {
+          {c.species.map(({ p, min, max, conds }) => {
+            const when = condLabel(conds, t);
             const y = p.yields[stat];
             return (
               <li key={p.id}>
                 <a href={href({ page: "pokemon", id: p.id })} className={`flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-sunk ${y ? "" : "opacity-55"}`}>
                   <span className="grid size-8 flex-none place-items-center"><Sprite p={p} className="size-8" fallbackClass="size-4" /></span>
-                  <span className="min-w-0 flex-1 truncate text-[0.88rem]">{nameOf(p, lang)} <span className="font-mono text-[0.7rem] text-faint">#{pad(p.id)}</span></span>
+                  <span className="grid min-w-0 flex-1">
+                    <span className="truncate text-[0.88rem]">{nameOf(p, lang)} <span className="font-mono text-[0.7rem] text-faint">#{pad(p.id)}</span></span>
+                    {when && <span className="truncate text-[0.7rem] text-accent-ink">◷ {when}</span>}
+                  </span>
                   <span className="flex gap-1">
                     {Object.entries(p.yields).map(([k, v]) => (
                       <span key={k} style={{ "--s": STAT_COL[k] }} className={`rounded-[5px] px-1.5 py-px text-[0.68rem] font-medium ${k === stat ? "iv-chip text-fg" : "bg-sunk text-muted"}`}>
