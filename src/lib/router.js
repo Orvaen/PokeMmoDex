@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 //   #/pokemon/94/lieux       → lieux
 //   #/pokemon/94/elevage     → élevage (?plan=… : plan partagé par lien)
 //   #/lieu/<clé>             → page d'un lieu
-//   #/tutoriels
+//   #/tutoriels, #/hordes-ev
 //   #/a-propos, #/mentions-legales, #/confidentialite, #/cookies
 export const LEGAL_PAGES = ["a-propos", "mentions-legales", "confidentialite", "cookies"];
 const TABS = ["fiche", "lieux", "elevage"];
@@ -23,6 +23,7 @@ export function parseHash(hash) {
   if (parts[0] === "pokemon" && /^\d+$/.test(parts[1] || "")) return { page: "pokemon", id: +parts[1], tab: TABS.includes(parts[2]) ? parts[2] : "fiche", plan };
   if (parts[0] === "lieu" && parts[1]) return { page: "location", key: parts.slice(1).join("/") };
   if (parts[0] === "tutoriels") return { page: "tutorials" };
+  if (parts[0] === "hordes-ev") return { page: "evhordes" };
   if (LEGAL_PAGES.includes(parts[0])) return { page: "legal", slug: parts[0] };
   return { page: "notfound" };
 }
@@ -32,6 +33,7 @@ export function href(route) {
   if (route.page === "location") return `#/lieu/${encodeURIComponent(route.key)}`;
   if (route.page === "legal") return `#/${route.slug}`;
   if (route.page === "tutorials") return "#/tutoriels";
+  if (route.page === "evhordes") return "#/hordes-ev";
   return "#/";
 }
 

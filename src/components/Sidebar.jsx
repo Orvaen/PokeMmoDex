@@ -6,7 +6,7 @@ import { Dropdown, Icon, Sprite } from "./ui.jsx";
 
 export const REPO = "https://github.com/rayan-studio/PokeMmoDex";
 
-export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route }) {
+export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route, view, setView }) {
   const { lang, t, setLang } = useLang();
   const listRef = useRef(null);
   const searchRef = useRef(null);
@@ -77,6 +77,21 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           />
         </label>
 
+        <div className="grid grid-cols-2 gap-1 rounded-[11px] bg-sunk p-1" role="group" aria-label={t.viewLabel}>
+          {[["list", t.viewList, <svg key="l" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10" /></svg>],
+            ["cards", t.viewCards, <svg key="c" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></svg>]].map(([v, label, icon]) => (
+            <a
+              key={v}
+              href="#/"
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+              className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg text-[0.84rem] ${view === v ? "bg-panel font-medium text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted hover:text-fg"}`}
+            >
+              {icon}{label}
+            </a>
+          ))}
+        </div>
+
         <div className="flex flex-wrap gap-1.5">
           <Dropdown
             label={t.region}
@@ -119,7 +134,7 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
         )}
       </div>
 
-      <ul ref={listRef} onKeyDown={onListKey} className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 [scrollbar-width:thin]">
+      <ul ref={listRef} onKeyDown={onListKey} hidden={view === "cards"} className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 [scrollbar-width:thin]">
         {visible.length ? (
           visible.map(p => (
             <li key={p.id} className="[content-visibility:auto] [contain-intrinsic-size:46px]">
@@ -143,7 +158,19 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
         )}
       </ul>
 
-      <div className="border-t border-line px-2 pt-2">
+      {view === "cards" && <div className="flex-1 max-[860px]:hidden" />}
+      <div className={`grid gap-0.5 border-t border-line px-2 pt-2 ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
+        <a
+          href="#/hordes-ev"
+          aria-current={route?.page === "evhordes" ? "page" : undefined}
+          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "evhordes" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
+        >
+          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.68_0.15_340)] text-white">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>
+          </span>
+          <span className="flex-1">{t.evNav}</span>
+          <span className="text-[0.74rem] text-faint">{t.evSub}</span>
+        </a>
         <a
           href="#/tutoriels"
           aria-current={route?.page === "tutorials" ? "page" : undefined}
@@ -156,7 +183,7 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           <span className="text-[0.74rem] text-faint">{t.tutoSub}</span>
         </a>
       </div>
-      <footer className="px-[18px] pb-3 pt-2 text-[0.74rem] text-faint">
+      <footer className={`px-[18px] pb-3 pt-2 text-[0.74rem] text-faint ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
         <nav className="flex flex-wrap gap-x-3 gap-y-1">
           <a className="hover:text-fg" href="#/a-propos">{t.footer.about}</a>
           <a className="hover:text-fg" href="#/mentions-legales">{t.footer.legal}</a>
