@@ -29,6 +29,7 @@ export function parseHash(hash) {
   if (parts[0] === "tutoriels") return { page: "tutorials" };
   if (parts[0] === "hordes-ev") return { page: "evhordes" };
   if (parts[0] === "natures") return { page: "natures" };
+  if (parts[0] === "objets") return { page: "items" };
   if (parts[0] === "talents") return { page: "abilities" };
   if (parts[0] === "talent" && parts[1]) return { page: "ability", name: parts.slice(1).join("/") };
   if (parts[0] === "baies") return { page: "berries", group: params.get("c") || "" };
@@ -46,6 +47,7 @@ export function href(route) {
   if (route.page === "tutorials") return "#/tutoriels";
   if (route.page === "evhordes") return "#/hordes-ev";
   if (route.page === "natures") return "#/natures";
+  if (route.page === "items") return "#/objets";
   if (route.page === "abilities") return "#/talents";
   if (route.page === "ability") return `#/talent/${encodeURIComponent(route.name)}`;
   if (route.page === "berries") return "#/baies" + (route.group ? "?c=" + route.group : "");

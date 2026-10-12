@@ -14,6 +14,10 @@ const berries = readJSON("data/items-berry.json");
 const items = new Map(readJSON("data/items.json").map(i => [i.id, i]));
 const frNames = readJSON("locales/fr-FR/item_names.json");
 const frDesc = readJSON("locales/fr-FR/item_descriptions.json");
+const monsters = readJSON("data/monster.json").filter(m => m.id >= 1 && m.id <= 649);
+const HOLD = new Map();
+for (const m of monsters) for (const h of m.held_items || []) { const k = h.name.toLowerCase(); if (!HOLD.has(k)) HOLD.set(k, new Set()); HOLD.get(k).add(m.id); }
+const holdersOf = k => [...(HOLD.get(k) || [])].sort((a, b) => a - b);
 const clean = s => (s || "").replace(/\s*\n\s*/g, " ").replace(/\s+/g, " ").trim();
 
 const FLAVORS = ["spicy", "dry", "sweet", "bitter", "sour"];
@@ -29,8 +33,8 @@ function recipes(target) {
   return [...out].map(s => JSON.parse(s));
 }
 
-// Description : la plus récente (Unys) d'abord
-const PREF = [9, 1, 5, 6, 8, 0];
+// Description : celle écrite pour PokeMMO (ids 5xxx / 6xxx) d'abord, puis la plus récente
+const PREF = [5, 6, 9, 1, 8, 0];
 const out = berries.map(b => {
   const list = b.items.map(id => items.get(id)).filter(Boolean);
   const en = list[0].name;
@@ -43,6 +47,7 @@ const out = berries.map(b => {
     id: b.id, en, fr: frNames[en.toLowerCase()] || en, desc: { en: descEn, fr: descFr || null },
     flavor, recipes: rec, grow: b.grow_time, harvest: [b.min_harvest, b.max_harvest],
     naturePower: { type: b.nature_power_type, power: b.nature_power_power },
+    holders: holdersOf(en.toLowerCase()),
   };
 });
 const seedNames = Object.fromEntries(FLAVORS.flatMap(f => ["Plain", "Very"].map(k => {

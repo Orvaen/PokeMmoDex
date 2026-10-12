@@ -3,6 +3,7 @@ import { STAT_COL, norm } from "../lib/data.js";
 import { useLang } from "../lib/i18n.js";
 import { Icon } from "../components/ui.jsx";
 import DATA from "../data/berries.json";
+import Holders from "../components/Holders.jsx";
 
 // Familles de Baies (par nom anglais) ; les Baies EV indiquent la stat qu'elles baissent
 const EV_STAT = { "Pomeg Berry": "hp", "Kelpsy Berry": "atk", "Qualot Berry": "def", "Hondew Berry": "spa", "Grepa Berry": "spd", "Tamato Berry": "spe" };
@@ -129,6 +130,7 @@ function BerryCard({ b }) {
           </div>
         </div>
 
+        {b.holders.length > 0 && <Holders ids={b.holders} />}
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-[0.78rem] text-muted">
           <span>{t.berryGrow(b.grow)}</span>
           <span>{t.berryHarvest(b.harvest[0], b.harvest[1])}</span>

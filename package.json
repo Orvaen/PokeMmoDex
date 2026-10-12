@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "data": "node scripts/build-data.mjs ../pokemmo-data ../PokeMMO-Data ../pokemon-showdown && node scripts/build-berries.mjs ../pokemmo-data"
+    "data": "node scripts/build-data.mjs ../pokemmo-data ../PokeMMO-Data ../pokemon-showdown && node scripts/build-berries.mjs ../pokemmo-data && node scripts/build-items.mjs ../pokemmo-data"
   },
   "dependencies": {
     "react": "19.2.0",

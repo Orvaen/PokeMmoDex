@@ -15,6 +15,7 @@ const MovesListPage = lazy(() => import("./pages/MovesListPage.jsx"));
 const MovePage = lazy(() => import("./pages/MovePage.jsx"));
 const TeamPage = lazy(() => import("./pages/TeamPage.jsx"));
 const BerriesPage = lazy(() => import("./pages/BerriesPage.jsx"));
+const ItemsPage = lazy(() => import("./pages/ItemsPage.jsx"));
 const AbilityPage = lazy(() => import("./pages/AbilitiesPage.jsx"));
 const AbilitiesListPage = lazy(() => import("./pages/AbilitiesPage.jsx").then(m => ({ default: m.AbilitiesListPage })));
 import { Loading } from "./components/MoveBits.jsx";
@@ -100,6 +101,7 @@ export default function App() {
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
   else if (route.page === "natures") main = <NaturesPage />;
+  else if (route.page === "items") main = <ItemsPage />;
   else if (route.page === "abilities") main = <AbilitiesListPage />;
   else if (route.page === "ability") main = <AbilityPage name={route.name} />;
   else if (route.page === "berries") main = <BerriesPage group={route.group} />;
