@@ -3,6 +3,7 @@
 Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglais. Gratuit, sans pub, sans compte et open source.
 
 - Les 649 Pokémon des générations 1 à 5 avec les **stats, types et talents du client PokeMMO**, en vue **Fiche** (liste + fiche détaillée) ou **Cartes** (grille)
+- **Créateur d'équipe** : 6 cases, verdict en une phrase, suggestions de Pokémon cliquables pour combler les faiblesses, tableau des faiblesses, couverture offensive (types ou attaques choisies), partage par lien, bouton « Ajouter à l'équipe » sur chaque fiche
 - **Hordes EV** : choisis la stat à monter, le site liste les spots de horde qui la donnent, les EV par horde et le nombre de hordes pour 252
 - **Lieux de capture** par région : méthode (herbes, surf, cannes…), rareté, hordes et niveaux, avec une page pour chaque lieu
 - **Cartes des régions** (schémas dessinés pour le site) : le lieu mis en avant et le chemin depuis le Centre Pokémon le plus proche
@@ -54,7 +55,7 @@ Les sprites Noir & Blanc viennent de Pokémon Showdown.
 src/
   lib/        données, élevage (arbre, conseils), traductions, routeur, stockage local
   components/ barre latérale, menus déroulants, sprites
-  pages/      fiche, cartes, capacités, lieux, page d'un lieu, élevage, hordes EV, tutoriels, pages légales
+  pages/      fiche, cartes, capacités, équipe, lieux, page d'un lieu, élevage, hordes EV, tutoriels, pages légales
 src/data/maps.js  schémas des 5 régions (lieux, coordonnées, liaisons)
 scripts/      génération des données
 ```

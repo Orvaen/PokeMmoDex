@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 // Préférences gardées dans le navigateur (localStorage), jamais envoyées ailleurs.
 const PREFIX = "pmdex:";
-export const STORAGE_KEYS = ["lang", "theme", "ivs", "natured", "prices", "box", "shareName", "view", "evStat", "onlyTm", "sidebarW", "sidebarHidden"];
+export const STORAGE_KEYS = ["lang", "theme", "ivs", "natured", "prices", "box", "shareName", "view", "evStat", "onlyTm", "sidebarW", "sidebarHidden", "team"];
 
 export function load(key, fallback) {
   try {

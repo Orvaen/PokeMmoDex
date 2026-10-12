@@ -13,6 +13,7 @@ import CardsPage from "./pages/CardsPage.jsx";
 import NaturesPage from "./pages/NaturesPage.jsx";
 import MovesListPage from "./pages/MovesListPage.jsx";
 import MovePage from "./pages/MovePage.jsx";
+import TeamPage from "./pages/TeamPage.jsx";
 
 const DEFAULT_ID = 6;
 
@@ -88,6 +89,7 @@ export default function App() {
   else if (route.page === "natures") main = <NaturesPage />;
   else if (route.page === "moves") main = <MovesListPage />;
   else if (route.page === "move") main = <MovePage id={route.id} />;
+  else if (route.page === "team") main = <TeamPage key={route.team || "mine"} shared={route.team} />;
   else main = <NotFound />;
 
   // Remonte en haut à chaque changement de page

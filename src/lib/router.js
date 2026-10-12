@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 //   #/lieu/<clé>             → page d'un lieu
 //   #/pokemon/94/capacites  → capacités du Pokémon
 //   #/capacites, #/capacite/89 → liste des capacités, page d'une capacité
+//   #/equipe (?t=… : équipe partagée par lien)
 //   #/tutoriels, #/hordes-ev, #/natures
 //   #/a-propos, #/mentions-legales, #/confidentialite, #/cookies
 export const LEGAL_PAGES = ["a-propos", "mentions-legales", "confidentialite", "cookies"];
@@ -16,7 +17,8 @@ const TABS = ["fiche", "capacites", "lieux", "elevage"];
 export function parseHash(hash) {
   const [rawPath, query = ""] = hash.replace(/^#\/?/, "").split("?");
   const h = decodeURIComponent(rawPath);
-  const plan = new URLSearchParams(query).get("plan");
+  const params = new URLSearchParams(query);
+  const plan = params.get("plan");
   // anciens liens : #94 et #breed-94
   const old = h.match(/^(breed-)?(\d+)$/);
   if (old) return { page: "pokemon", id: +old[2], tab: old[1] ? "elevage" : "fiche" };
@@ -28,6 +30,7 @@ export function parseHash(hash) {
   if (parts[0] === "hordes-ev") return { page: "evhordes" };
   if (parts[0] === "natures") return { page: "natures" };
   if (parts[0] === "capacites") return { page: "moves" };
+  if (parts[0] === "equipe") return { page: "team", team: params.get("t") };
   if (parts[0] === "capacite" && /^\d+$/.test(parts[1] || "")) return { page: "move", id: +parts[1] };
   if (LEGAL_PAGES.includes(parts[0])) return { page: "legal", slug: parts[0] };
   return { page: "notfound" };
@@ -41,6 +44,7 @@ export function href(route) {
   if (route.page === "evhordes") return "#/hordes-ev";
   if (route.page === "natures") return "#/natures";
   if (route.page === "moves") return "#/capacites";
+  if (route.page === "team") return "#/equipe";
   if (route.page === "move") return `#/capacite/${route.id}`;
   return "#/";
 }

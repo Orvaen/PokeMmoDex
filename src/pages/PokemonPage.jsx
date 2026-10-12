@@ -8,6 +8,7 @@ import LocationsTab from "./LocationsTab.jsx";
 import Breeding from "./Breeding.jsx";
 import AbilityTag from "../components/AbilityTag.jsx";
 import MovesTab from "./MovesTab.jsx";
+import { useStored } from "../lib/storage.js";
 
 export default function PokemonPage({ p, tab, plan, prev, next }) {
   const { lang, t } = useLang();
@@ -75,6 +76,8 @@ export default function PokemonPage({ p, tab, plan, prev, next }) {
 function Overview({ p }) {
   const { lang, t } = useLang();
   const [shiny, setShiny] = useState(false);
+  const [team, setTeam] = useStored("team", []);
+  const inTeam = team.some(s => s?.id === p.id);
   const eff = effectiveness(p.types);
   const order = Object.keys(TYPES).sort((a, b) => eff[b] - eff[a]);
   const weak = Object.values(eff).filter(m => m > 1).length;
@@ -109,6 +112,15 @@ function Overview({ p }) {
             <a href={href({ page: "pokemon", id: p.id, tab: "lieux" })} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-panel px-4 text-[0.9rem] text-fg hover:border-accent">
               {Icon.pin}{t.seeLocations}
             </a>
+            {inTeam ? (
+              <a href="#/equipe" className="inline-flex h-10 items-center gap-2 rounded-xl border border-accent bg-accent-soft px-4 text-[0.9rem] font-medium text-accent-ink">✓ {t.inTeam(team.length)}</a>
+            ) : team.length >= 6 ? (
+              <a href="#/equipe" className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-panel px-4 text-[0.9rem] text-muted hover:border-accent">{t.teamFull}</a>
+            ) : (
+              <button type="button" onClick={() => setTeam(cur => [...cur.filter(Boolean), { id: p.id, moves: [] }])} className="inline-flex h-10 items-center gap-2 rounded-xl border border-line bg-panel px-4 text-[0.9rem] text-fg hover:border-accent">
+                + {t.addToTeam} <span className="font-mono text-[0.76rem] text-faint">{team.length}/6</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="disc-bg relative grid aspect-square max-w-full place-items-center rounded-full max-[860px]:order-first max-[860px]:mx-auto max-[860px]:w-[min(260px,70vw)]">

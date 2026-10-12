@@ -203,6 +203,17 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
       {view === "cards" && <div className="flex-1 max-[860px]:hidden" />}
       <div className={`grid gap-0.5 border-t border-line px-2 pt-2 ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
         <a
+          href="#/equipe"
+          aria-current={route?.page === "team" ? "page" : undefined}
+          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "team" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
+        >
+          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.58_0.15_290)] text-white">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><circle cx="6" cy="8" r="2.5" /><circle cx="12" cy="8" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="6" cy="16" r="2.5" /><circle cx="12" cy="16" r="2.5" /><circle cx="18" cy="16" r="2.5" /></svg>
+          </span>
+          <span className="flex-1">{t.teamNav}</span>
+          <span className="text-[0.74rem] text-faint">{t.teamSub}</span>
+        </a>
+        <a
           href="#/hordes-ev"
           aria-current={route?.page === "evhordes" ? "page" : undefined}
           className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "evhordes" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
