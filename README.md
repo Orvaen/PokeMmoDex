@@ -37,7 +37,7 @@ Le workflow `.github/workflows/deploy.yml` construit et publie le site à chaque
 
 ## Données
 
-`src/data/dex.json` est généré par `scripts/build-data.mjs` à partir de :
+`src/data/dex.json` (Pokémon, chargé au démarrage), `src/data/encounters.json` (lieux et rencontres, chargé seulement par les pages qui en ont besoin) et `src/data/moves.json` sont générés par `scripts/build-data.mjs` à partir de :
 
 - [PokeMMO-Tools/pokemmo-data](https://github.com/PokeMMO-Tools/pokemmo-data) : Pokémon, stats, talents, groupes œuf, lieux et noms français, exportés du client PokeMMO
 - [PokeMMOZone/PokeMMO-Data](https://github.com/PokeMMOZone/PokeMMO-Data) : tiers PvP, noms et descriptions des talents

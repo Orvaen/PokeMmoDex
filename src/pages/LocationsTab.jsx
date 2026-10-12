@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { LOCATIONS, METHODS, RARITIES, REGIONS } from "../lib/data.js";
+import { METHODS, RARITIES, REGIONS } from "../lib/data.js";
+import { LOCATIONS } from "../lib/encounters.js";
 import { locName, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Icon, Section } from "../components/ui.jsx";

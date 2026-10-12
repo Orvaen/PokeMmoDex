@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { ALL, LOCATIONS, METHODS, RARITIES, STATS, STAT_COL, pad } from "../lib/data.js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ALL, METHODS, RARITIES, STATS, STAT_COL, pad } from "../lib/data.js";
+import { LOCATIONS } from "../lib/encounters.js";
 import { locName, nameOf, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { useStored } from "../lib/storage.js";
@@ -96,6 +97,18 @@ export default function EvHordesPage() {
     const gone = base.filter(s => !shown.has(s.key) && !s.species.some(x => x.p.yields[stat] && x.conds.some(c => fits(c, time, season))));
     return { changed: cards.filter(c => c.changed).length, gone: gone.length };
   }, [cards, season, time, stat, region]);
+  // Affichage progressif : 24 cartes, puis 24 de plus quand on approche du bas
+  const PAGE = 24;
+  const [limit, setLimit] = useState(PAGE);
+  useEffect(() => setLimit(PAGE), [stat, region, onlyPure, leppa, noHm, sort, season, time]);
+  const more = useRef(null);
+  useEffect(() => {
+    const el = more.current;
+    if (!el) return;
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) setLimit(l => l + PAGE); }, { rootMargin: "800px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [limit, cards.length]);
   const condText = [season !== "" && t.seasons[+season], time && t.timesOfDay[time]].filter(Boolean).join(" · ");
 
   return (
@@ -193,9 +206,12 @@ export default function EvHordesPage() {
       )}
 
       {cards.length ? (
-        <ul className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
-          {cards.map(c => <SpotCard key={c.key} c={c} stat={stat} condText={condText} />)}
-        </ul>
+        <div>
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+            {cards.slice(0, limit).map(c => <SpotCard key={c.key} c={c} stat={stat} condText={condText} />)}
+          </ul>
+          {cards.length > limit && <div ref={more} aria-hidden="true" className="h-px" />}
+        </div>
       ) : (
         <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{t.evNone}</p>
       )}

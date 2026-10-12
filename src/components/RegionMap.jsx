@@ -1,4 +1,4 @@
-import { LOCATIONS } from "../lib/data.js";
+import { LOCATIONS } from "../lib/encounters.js";
 import { useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { AREAS, EXTRA_FR, REGION_MAPS, baseName } from "../data/maps.js";

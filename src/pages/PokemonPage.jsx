@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { STATS, TYPES, effectiveness, evoStages, pad } from "../lib/data.js";
 import { abilName } from "../lib/breeding.js";
 import { nameOf, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";
-import LocationsTab from "./LocationsTab.jsx";
+const LocationsTab = lazy(() => import("./LocationsTab.jsx"));
+import { Loading } from "../components/MoveBits.jsx";
 import Breeding from "./Breeding.jsx";
 import AbilityTag from "../components/AbilityTag.jsx";
 import MovesTab from "./MovesTab.jsx";
@@ -68,7 +69,7 @@ export default function PokemonPage({ p, tab, plan, prev, next }) {
         )}
       </div>
 
-      {tab === "capacites" ? <MovesTab p={p} /> : tab === "lieux" ? <LocationsTab p={p} /> : tab === "elevage" ? <Breeding key={p.id + (plan || "")} p={p} shared={plan} /> : <Overview p={p} />}
+      {tab === "capacites" ? <MovesTab p={p} /> : tab === "lieux" ? <Suspense fallback={<Loading label={t.loading} />}><LocationsTab p={p} /></Suspense> : tab === "elevage" ? <Breeding key={p.id + (plan || "")} p={p} shared={plan} /> : <Overview p={p} />}
     </div>
   );
 }

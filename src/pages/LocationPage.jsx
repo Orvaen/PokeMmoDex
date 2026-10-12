@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { ENCOUNTERS, LOCATIONS, METHODS, TYPES, pad } from "../lib/data.js";
+import { METHODS, TYPES, pad } from "../lib/data.js";
+import { ENCOUNTERS, LOCATIONS } from "../lib/encounters.js";
 import { locName, nameOf, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";

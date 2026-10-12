@@ -1,7 +1,8 @@
 // CS (capacités de terrain) nécessaires pour atteindre un lieu depuis le Centre Pokémon le plus proche.
 // Calcul automatique : routes maritimes traversées (Surf), méthode du spot (Surf, Éclate-Roc),
 // plus une liste courte de passages connus des jeux d'origine. PokeMMO peut différer : à signaler sur GitHub.
-import { LOCATIONS, METHODS } from "../lib/data.js";
+import { METHODS } from "../lib/data.js";
+import { LOCATIONS } from "../lib/encounters.js";
 import { REGION_MAPS, accessPath, baseName } from "./maps.js";
 
 export const HMS = {

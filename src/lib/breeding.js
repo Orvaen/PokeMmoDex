@@ -83,7 +83,7 @@ export function breedInfo(p) {
   // Mâles conseillés : même groupe œuf, 50/50, de préférence trouvables en horde
   const males = ALL
     .filter(q => !q.prevo && q.obtainable && q.gender === 127 && !famIds.has(q.id) && q.eggGroups.some(e => groups.includes(e)))
-    .map(q => ({ q, horde: q.locs.some(l => l[2] === HORDE) }))
+    .map(q => ({ q, horde: q.horde }))
     .sort((a, b) => b.horde - a.horde || a.q.id - b.q.id)
     .slice(0, 8);
   return {

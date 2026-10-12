@@ -164,8 +164,16 @@ const movesDest = path.join(path.dirname(new URL(import.meta.url).pathname), "..
 fs.writeFileSync(movesDest, JSON.stringify({ moves, learn }));
 console.log(`${moves.length} capacités (${moves.filter(m => m.tm === "tm").length} CT, ${moves.filter(m => m.tm === "hm").length} CS) → ${movesDest} (${(fs.statSync(movesDest).size / 1024).toFixed(0)} Ko)`);
 
-const out = { pokemon, locations, methods: METHODS, rarities: RARITIES, regions: REGIONS, abilities, abilityRatings, typeChart, generated: new Date().toISOString().slice(0, 10) };
+// Les rencontres (≈ la moitié des données) partent dans encounters.json, chargé seulement par les pages qui en ont besoin
+const HORDE_IDX = RARITIES.indexOf("Horde");
+const encounters = { locations, locs: Object.fromEntries(pokemon.map(p => [p.id, p.locs])) };
+for (const p of pokemon) { p.horde = p.locs.some(l => l[2] === HORDE_IDX); p.wild = p.locs.length > 0; delete p.locs; }
+const encDest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/encounters.json");
+fs.writeFileSync(encDest, JSON.stringify(encounters));
+console.log(`${Object.keys(locations).length} lieux → ${encDest} (${(fs.statSync(encDest).size / 1024).toFixed(0)} Ko)`);
+
+const out = { pokemon, methods: METHODS, rarities: RARITIES, regions: REGIONS, abilities, abilityRatings, typeChart, generated: new Date().toISOString().slice(0, 10) };
 const dest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/dex.json");
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.writeFileSync(dest, JSON.stringify(out));
-console.log(`${pokemon.length} Pokémon, ${Object.keys(locations).length} lieux, ${Object.keys(abilityRatings).length} talents → ${dest} (${(fs.statSync(dest).size / 1024).toFixed(0)} Ko)`);
+console.log(`${pokemon.length} Pokémon, ${Object.keys(abilityRatings).length} talents → ${dest} (${(fs.statSync(dest).size / 1024).toFixed(0)} Ko)`);

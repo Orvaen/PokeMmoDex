@@ -3,10 +3,9 @@ import { ALL, BY_ID, TYPES, norm, pad } from "./lib/data.js";
 import { LangContext, STRINGS, nameOf, useLang } from "./lib/i18n.js";
 import { useRoute } from "./lib/router.js";
 import { useStored } from "./lib/storage.js";
-import { wildAt } from "./lib/conditions.js";
 import Sidebar from "./components/Sidebar.jsx";
 import PokemonPage from "./pages/PokemonPage.jsx";
-import LocationPage from "./pages/LocationPage.jsx";
+const LocationPage = lazy(() => import("./pages/LocationPage.jsx"));
 const LegalPage = lazy(() => import("./pages/LegalPage.jsx"));
 const TutorialsPage = lazy(() => import("./pages/TutorialsPage.jsx"));
 const EvHordesPage = lazy(() => import("./pages/EvHordesPage.jsx"));
@@ -24,7 +23,10 @@ function matches(p, f) {
   if (f.gen && p.gen !== +f.gen) return false;
   if (f.type && !p.types.includes(f.type)) return false;
   if (f.obtainable && !p.obtainable) return false;
-  if ((f.season || f.time) && !wildAt(p, f.time, f.season)) return false;
+  if (f.season || f.time) {
+    if (!p.wild) return false;
+    if (f.enc && !f.enc.wildAt(p, f.time, f.season)) return false;
+  }
   const raw = f.q.trim().replace(/^#/, "");
   if (!raw) return true;
   if (/^\d+$/.test(raw)) return String(p.id).startsWith(String(+raw)) || pad(p.id).startsWith(raw);
@@ -58,14 +60,19 @@ export default function App() {
     setTheme(dark ? "light" : "dark");
   };
 
+  // Filtres saison / moment : il faut les rencontres, chargées à la demande
+  const [enc, setEnc] = useState(null);
+  useEffect(() => { if ((filters.season || filters.time) && !enc) import("./lib/encounters.js").then(setEnc); }, [filters.season, filters.time]);
+
   const visible = useMemo(() => {
     const [key, dir] = filters.sort.split("-");
-    return ALL.filter(p => matches(p, filters)).sort((a, b) => {
+    const f = { ...filters, enc };
+    return ALL.filter(p => matches(p, f)).sort((a, b) => {
       let d = key === "num" ? a.id - b.id : key === "name" ? nameOf(a, lang).localeCompare(nameOf(b, lang), lang) : key === "bst" ? a.bst - b.bst : a.stats[key] - b.stats[key];
       if (dir === "desc") d = -d;
       return d || a.id - b.id;
     });
-  }, [filters, lang]);
+  }, [filters, lang, enc]);
 
   const cardsHome = route.page === "home" && view === "cards";
   const pokemon = route.page === "pokemon" ? BY_ID.get(route.id) : route.page === "home" && !cardsHome ? BY_ID.get(DEFAULT_ID) : null;

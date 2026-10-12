@@ -2,7 +2,6 @@ import dex from "../data/dex.json";
 
 export const ALL = dex.pokemon;
 export const BY_ID = new Map(ALL.map(p => [p.id, p]));
-export const LOCATIONS = dex.locations;
 export const METHODS = dex.methods;
 export const RARITIES = dex.rarities;
 export const REGIONS = dex.regions;
@@ -94,13 +93,6 @@ export function finalsFrom(p) {
   return out;
 }
 
-// Lieux : index inversé lieu → rencontres
-export const ENCOUNTERS = {};
-for (const p of ALL) {
-  for (const [loc, method, rarity, min, max] of p.locs) {
-    (ENCOUNTERS[loc] ||= []).push({ p, method, rarity, min, max });
-  }
-}
 
 // Genre : 0 mâle seulement, 254 femelle seulement, 255 asexué, sinon part de femelles sur 254
 const FEMALE_SHARE = { 31: 0.125, 63: 0.25, 127: 0.5, 191: 0.75 };
