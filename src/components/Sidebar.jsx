@@ -3,23 +3,24 @@ import { TYPES, pad } from "../lib/data.js";
 import { nameOf, typeName, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Dropdown, Icon, Sprite } from "./ui.jsx";
+import { useStored } from "../lib/storage.js";
 
+const ico = d => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const TOOLS = [
-  { key: "team", href: "#/equipe", pages: ["team"], full: "teamNav", col: "oklch(0.58 0.15 290)",
-    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><circle cx="6" cy="8" r="2.5" /><circle cx="12" cy="8" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="6" cy="16" r="2.5" /><circle cx="12" cy="16" r="2.5" /><circle cx="18" cy="16" r="2.5" /></svg> },
-  { key: "ev", href: "#/hordes-ev", pages: ["evhordes"], full: "evNav", col: "oklch(0.68 0.15 340)",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg> },
-  { key: "moves", href: "#/capacites", pages: ["moves", "move"], full: "movesNav", col: "oklch(0.6 0.14 255)",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></svg> },
-  { key: "natures", href: "#/natures", pages: ["natures"], full: "naturesNav", col: "oklch(0.62 0.13 150)",
-    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m7 14 5-5 5 5" /><path d="m7 20 5-5 5 5" opacity=".45" /></svg> },
-  { key: "tuto", href: "#/tutoriels", pages: ["tutorials"], full: "tutoTitle", col: "oklch(0.58 0.21 27)",
-    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg> },
+  { key: "team", href: "#/equipe", pages: ["team"], label: "teamNav", icon: ico(<><circle cx="8" cy="9" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3 19c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5M14 15.2c.8-.5 1.6-.7 2.5-.7 2 0 3.6 1.3 4 4" /></>) },
+  { key: "ev", href: "#/hordes-ev", pages: ["evhordes"], label: "evNav", icon: ico(<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" />) },
+  { key: "moves", href: "#/capacites", pages: ["moves", "move"], label: "movesNav", icon: ico(<><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></>) },
+  { key: "natures", href: "#/natures", pages: ["natures"], label: "naturesNav", icon: ico(<><path d="m7 11 5-5 5 5" /><path d="m7 18 5-5 5 5" opacity=".5" /></>) },
+  { key: "tuto", href: "#/tutoriels", pages: ["tutorials"], label: "tutoTitle", icon: ico(<><rect x="3.5" y="5.5" width="17" height="13" rx="3" /><path d="m10.5 9.5 4 2.5-4 2.5z" /></>) },
 ];
+
+const row = on => `flex h-8 w-full items-center gap-2.5 rounded-lg px-2.5 text-[0.88rem] transition-colors ${on ? "bg-sunk font-medium text-fg" : "text-muted hover:bg-sunk/70 hover:text-fg"}`;
+const ghostBtn = "grid size-8 place-items-center rounded-lg text-muted transition-colors hover:bg-sunk hover:text-fg";
 
 export const REPO = "https://github.com/rayan-studio/PokeMmoDex";
 
 export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route, view, setView, width, setWidth, hidden, onHide }) {
+  const [toolsOpen, setToolsOpen] = useStored("sidebarTools", true);
   // Redimensionnement à la souris (poignée sur le bord droit) ou au clavier (flèches)
   const MIN_W = 260, MAX_W = 560;
   const clampW = w => Math.round(Math.min(MAX_W, Math.max(MIN_W, w)));
@@ -70,6 +71,8 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
   };
 
   const sortKeys = Object.keys(t.sort);
+  const onDex = route?.page === "home" || route?.page === "pokemon";
+  const mobileCards = view === "cards" ? "max-[860px]:hidden" : "";
   return (
     <aside className={`relative flex min-h-0 min-w-0 flex-col border-r border-line bg-panel max-[860px]:border-r-0 ${hidden ? "min-[861px]:hidden" : ""}`}>
       <div
@@ -91,30 +94,28 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
       >
         <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 bg-transparent transition-colors group-hover:bg-accent group-focus-visible:bg-accent group-active:bg-accent" />
       </div>
-      <div className="grid gap-3 border-b border-line px-[18px] pb-3 pt-[18px]">
-        <div className="flex items-center gap-2.5">
-          <a href="#/" className="flex items-center gap-2.5 font-medium tracking-tight">
-            <span className="relative size-5 flex-none overflow-hidden rounded-full border-[1.5px] border-fg">
-              <span className="absolute inset-x-0 top-0 h-1/2 border-b-[1.5px] border-fg bg-accent" />
-              <span className="absolute left-1/2 top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-fg bg-panel" />
-            </span>
-            {t.siteTitle}
-          </a>
-          <span className="flex-1" />
-          <button type="button" onClick={onHide} aria-label={t.hidePanel} title={`${t.hidePanel} (Ctrl B)`} className="grid h-[30px] min-w-[30px] place-items-center rounded-lg border border-line text-muted hover:bg-sunk hover:text-fg max-[860px]:hidden">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15M15.5 10l-2 2 2 2" /></svg>
-          </button>
-          <button type="button" onClick={() => setLang(lang === "fr" ? "en" : "fr")} aria-label={t.langLabel} className="grid h-[30px] min-w-[30px] place-items-center rounded-lg border border-line px-2 text-[0.76rem] font-medium text-muted hover:bg-sunk hover:text-fg">
-            {t.langBtn}
-          </button>
-          <button type="button" onClick={onToggleTheme} aria-label={t.theme} className="grid h-[30px] min-w-[30px] place-items-center rounded-lg border border-line text-muted hover:bg-sunk hover:text-fg">
-            {Icon.moon}
-          </button>
-        </div>
 
-        <label className="relative">
+      {/* En-tête : logo et réglages discrets */}
+      <div className="flex items-center gap-1 px-3 pb-2 pt-3">
+        <a href="#/" className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 text-[0.95rem] font-medium tracking-tight">
+          <span className="relative size-[18px] flex-none overflow-hidden rounded-full border-[1.5px] border-fg">
+            <span className="absolute inset-x-0 top-0 h-1/2 border-b-[1.5px] border-fg bg-accent" />
+            <span className="absolute left-1/2 top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] border-fg bg-panel" />
+          </span>
+          <span className="truncate">{t.siteTitle}</span>
+        </a>
+        <button type="button" onClick={() => setLang(lang === "fr" ? "en" : "fr")} aria-label={t.langLabel} className={`${ghostBtn} text-[0.74rem] font-medium`}>{t.langBtn}</button>
+        <button type="button" onClick={onToggleTheme} aria-label={t.theme} className={ghostBtn}>{Icon.moon}</button>
+        <button type="button" onClick={onHide} aria-label={t.hidePanel} title={`${t.hidePanel} (Ctrl B)`} className={`${ghostBtn} max-[860px]:hidden`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3" /><path d="M9.5 4.5v15" /></svg>
+        </button>
+      </div>
+
+      {/* Recherche, présentée comme une ligne */}
+      <div className="px-3">
+        <label className="group relative block">
           <span className="sr-only">{t.searchLabel}</span>
-          <span className="absolute left-[13px] top-1/2 -translate-y-1/2 text-faint">{Icon.search}</span>
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-faint">{Icon.search}</span>
           <input
             ref={searchRef}
             id="search"
@@ -128,105 +129,92 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
               if (e.key === "Enter" && visible[0]) location.hash = href({ page: "pokemon", id: visible[0].id }).slice(1);
               if (e.key === "ArrowDown") { e.preventDefault(); listRef.current?.querySelector("a[data-id]")?.focus(); }
             }}
-            className="h-[42px] w-full rounded-[11px] border border-transparent bg-sunk pl-[38px] pr-3 text-[0.95rem] placeholder:text-faint focus:border-accent focus:bg-panel focus:outline-none"
+            className="h-9 w-full rounded-lg border border-line bg-transparent pl-[34px] pr-12 text-[0.88rem] placeholder:text-faint hover:bg-sunk/50 focus:border-accent focus:bg-panel focus:outline-none"
           />
+          {!filters.q && <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-md border border-line px-1.5 font-sans text-[0.68rem] text-faint max-[860px]:hidden">Ctrl K</kbd>}
         </label>
-
-        <div className="grid grid-cols-2 gap-1 rounded-[11px] bg-sunk p-1" role="group" aria-label={t.viewLabel}>
-          {[["list", t.viewList, <svg key="l" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 6h3M4 12h3M4 18h3M10 6h10M10 12h10M10 18h10" /></svg>],
-            ["cards", t.viewCards, <svg key="c" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></svg>]].map(([v, label, icon]) => (
-            <a
-              key={v}
-              href="#/"
-              aria-pressed={view === v}
-              onClick={() => setView(v)}
-              className={`inline-flex h-8 items-center justify-center gap-1.5 rounded-lg text-[0.84rem] ${view === v ? "bg-panel font-medium text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted hover:text-fg"}`}
-            >
-              {icon}{label}
-            </a>
-          ))}
-        </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          <Dropdown
-            label={t.region}
-            value={filters.gen}
-            active={!!filters.gen}
-            onChange={v => set({ gen: v })}
-            options={[{ value: "", label: t.allRegions }, { sep: true }, ...t.regions.map((r, i) => ({ value: String(i + 1), label: r, tag: `Gen ${i + 1}` }))]}
-          />
-          <Dropdown
-            label={t.type}
-            value={filters.type}
-            active={!!filters.type}
-            onChange={v => set({ type: v })}
-            options={[{ value: "", label: t.allTypes }, { sep: true }, ...Object.keys(TYPES).map(k => ({ value: k, label: typeName(k, lang), color: TYPES[k].col }))]}
-          />
-          <Dropdown
-            label={t.sortLbl}
-            value={filters.sort}
-            active={filters.sort !== "num-asc"}
-            onChange={v => set({ sort: v })}
-            options={[...sortKeys.slice(0, 3).map(k => ({ value: k, label: t.sort[k] })), { sep: true }, ...sortKeys.slice(3).map(k => ({ value: k, label: t.sort[k] }))]}
-          />
-          <button
-            type="button"
-            aria-pressed={filters.obtainable}
-            onClick={() => set({ obtainable: !filters.obtainable })}
-            className={`h-8 rounded-full border px-3 text-[0.82rem] transition-colors ${filters.obtainable ? "border-transparent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-sunk hover:text-fg"}`}
-          >
-            {t.obtainable}
-          </button>
-        </div>
       </div>
 
-      <div className="flex justify-between px-[18px] pb-1.5 pt-2.5 text-[0.74rem] uppercase tracking-[0.09em] text-faint">
-        <span>{t.showing(visible.length)}</span>
-        {dirty && (
-          <button type="button" className="uppercase tracking-[0.09em] hover:text-fg" onClick={() => setFilters({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false })}>
-            {t.reset}
-          </button>
-        )}
-      </div>
-
-      <ul ref={listRef} onKeyDown={onListKey} hidden={view === "cards"} className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 [scrollbar-width:thin]">
-        {visible.length ? (
-          visible.map(p => (
-            <li key={p.id} className="[content-visibility:auto] [contain-intrinsic-size:46px]">
-              <a
-                href={href({ page: "pokemon", id: p.id })}
-                data-id={p.id}
-                aria-current={p.id === currentId ? "true" : undefined}
-                className={`group grid w-full grid-cols-[38px_40px_minmax(0,1fr)_auto] items-center gap-2 rounded-[10px] py-[3px] pl-2 pr-2.5 ${p.id === currentId ? "bg-accent-soft" : "hover:bg-sunk"}`}
-              >
-                <span className={`font-mono text-[0.72rem] tabular-nums ${p.id === currentId ? "text-accent-ink" : "text-faint"}`}>{pad(p.id)}</span>
-                <span className="grid size-10 place-items-center"><Sprite p={p} className="size-10" /></span>
-                <span className={`truncate text-[0.93rem] ${p.obtainable ? "" : "text-faint"}`}>{nameOf(p, lang)}</span>
-                <span className="flex gap-[3px]">
-                  {p.types.map(ty => <i key={ty} title={typeName(ty, lang)} className="size-2 rounded-full" style={{ background: TYPES[ty].col }} />)}
-                </span>
+      {/* Navigation : lignes simples, icônes au trait */}
+      <nav aria-label={t.toolsNav} className={`grid gap-px px-3 pt-2 ${mobileCards}`}>
+        <div className={`group ${row(onDex)} pr-1`}>
+          <a href="#/" className="flex min-w-0 flex-1 items-center gap-2.5 self-stretch">
+            {ico(<><circle cx="12" cy="12" r="8" /><path d="M4 12h5M15 12h5" /><circle cx="12" cy="12" r="2.5" /></>)}
+            <span className="truncate">{t.pokedexNav}</span>
+          </a>
+          <span className="flex rounded-md p-0.5" role="group" aria-label={t.viewLabel}>
+            {[["list", t.viewList, <path key="l" d="M5 7h14M5 12h14M5 17h14" />], ["cards", t.viewCards, <g key="c"><rect x="4.5" y="4.5" width="6" height="6" rx="1.5" /><rect x="13.5" y="4.5" width="6" height="6" rx="1.5" /><rect x="4.5" y="13.5" width="6" height="6" rx="1.5" /><rect x="13.5" y="13.5" width="6" height="6" rx="1.5" /></g>]].map(([v, label, d]) => (
+              <a key={v} href="#/" title={label} aria-label={label} aria-pressed={view === v} onClick={() => setView(v)}
+                className={`grid size-6 place-items-center rounded-md transition-colors ${view === v ? "bg-panel text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-faint hover:text-fg"}`}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">{d}</svg>
               </a>
-            </li>
-          ))
-        ) : (
-          <li className="px-[18px] py-10 text-center text-[0.9rem] text-muted">{t.noMatch}</li>
-        )}
-      </ul>
-
-      {view === "cards" && <div className="flex-1 max-[860px]:hidden" />}
-      <nav aria-label={t.toolsNav} className={`grid grid-cols-5 gap-1 border-t border-line px-2 pt-2 ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
-        {TOOLS.map(tool => {
+            ))}
+          </span>
+        </div>
+        <button type="button" onClick={() => setToolsOpen(o => !o)} aria-expanded={toolsOpen} aria-label={t.toggleTools}
+          className="group mt-2 flex h-6 items-center gap-1 px-2.5 text-left text-[0.74rem] text-faint hover:text-muted">
+          {t.toolsNav}
+          <span className={`opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 ${toolsOpen ? "" : "-rotate-90 opacity-100"}`}>{Icon.chevDown}</span>
+        </button>
+        {toolsOpen && TOOLS.map(tool => {
           const on = tool.pages.includes(route?.page);
           return (
-            <a key={tool.href} href={tool.href} title={t[tool.full]} aria-current={on ? "page" : undefined}
-              className={`grid min-w-0 justify-items-center gap-1 rounded-[10px] px-0.5 py-1.5 text-center ${on ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-sunk hover:text-fg"}`}>
-              <span className="grid size-7 place-items-center rounded-lg text-white" style={{ background: tool.col }}>{tool.icon}</span>
-              <span className={`w-full truncate text-[0.7rem] leading-tight ${on ? "font-medium" : ""}`}>{t.navShort[tool.key]}</span>
+            <a key={tool.key} href={tool.href} aria-current={on ? "page" : undefined} className={row(on)}>
+              {tool.icon}
+              <span className="truncate">{t[tool.label]}</span>
             </a>
           );
         })}
       </nav>
-      <footer className={`px-[18px] pb-3 pt-2 text-[0.74rem] text-faint ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
+
+      {/* Liste des Pokémon */}
+      <div className="flex items-center gap-0.5 px-3 pb-1 pt-3">
+        <span className="px-2.5 text-[0.74rem] text-faint">{t.showing(visible.length)}</span>
+        <span className="flex-1" />
+        {dirty && <button type="button" className="h-6 rounded-md px-1.5 text-[0.74rem] text-faint hover:bg-sunk hover:text-fg" onClick={() => setFilters({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false })}>{t.reset}</button>}
+      </div>
+      <div className="flex flex-wrap gap-0.5 px-3 pb-1.5">
+        <Dropdown size="ghost" label={t.region} value={filters.gen} active={!!filters.gen} onChange={v => set({ gen: v })}
+          options={[{ value: "", label: t.allRegions }, { sep: true }, ...t.regions.map((r, i) => ({ value: String(i + 1), label: r, tag: `Gen ${i + 1}` }))]} />
+        <Dropdown size="ghost" label={t.type} value={filters.type} active={!!filters.type} onChange={v => set({ type: v })}
+          options={[{ value: "", label: t.allTypes }, { sep: true }, ...Object.keys(TYPES).map(k => ({ value: k, label: typeName(k, lang), color: TYPES[k].col }))]} />
+        <Dropdown size="ghost" label={t.sortLbl} value={filters.sort} active={filters.sort !== "num-asc"} onChange={v => set({ sort: v })}
+          options={[...sortKeys.slice(0, 3).map(k => ({ value: k, label: t.sort[k] })), { sep: true }, ...sortKeys.slice(3).map(k => ({ value: k, label: t.sort[k] }))]} />
+        <button type="button" aria-pressed={filters.obtainable} onClick={() => set({ obtainable: !filters.obtainable })}
+          className={`inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[0.82rem] transition-colors hover:bg-sunk ${filters.obtainable ? "font-medium text-fg" : "text-muted hover:text-fg"}`}>
+          <span className={`grid size-3.5 place-items-center rounded-[4px] border ${filters.obtainable ? "border-fg bg-fg text-panel" : "border-faint"}`}>
+            {filters.obtainable && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg>}
+          </span>
+          {t.obtainable}
+        </button>
+      </div>
+
+      <ul ref={listRef} onKeyDown={onListKey} hidden={view === "cards"} className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 [scrollbar-width:thin]">
+        {visible.length ? (
+          visible.map(p => {
+            const on = p.id === currentId;
+            return (
+              <li key={p.id} className="[content-visibility:auto] [contain-intrinsic-size:38px]">
+                <a
+                  href={href({ page: "pokemon", id: p.id })}
+                  data-id={p.id}
+                  aria-current={on ? "true" : undefined}
+                  className={`group flex h-[38px] w-full items-center gap-2 rounded-lg pl-1 pr-2.5 transition-colors ${on ? "bg-sunk text-fg" : "text-muted hover:bg-sunk/70 hover:text-fg"}`}
+                >
+                  <span className="grid size-8 flex-none place-items-center"><Sprite p={p} className="size-8" fallbackClass="size-4" /></span>
+                  <span className={`min-w-0 flex-1 truncate text-[0.88rem] ${on ? "font-medium" : ""} ${p.obtainable ? "" : "opacity-55"}`}>{nameOf(p, lang)}</span>
+                  <span className="font-mono text-[0.68rem] tabular-nums text-faint">{pad(p.id)}</span>
+                </a>
+              </li>
+            );
+          })
+        ) : (
+          <li className="px-3 py-10 text-center text-[0.88rem] text-muted">{t.noMatch}</li>
+        )}
+      </ul>
+
+      {view === "cards" && <div className="flex-1 max-[860px]:hidden" />}
+      <footer className={`border-t border-line px-5 pb-3 pt-2.5 text-[0.72rem] text-faint ${mobileCards}`}>
         <nav className="flex flex-wrap gap-x-3 gap-y-1">
           <a className="hover:text-fg" href="#/a-propos">{t.footer.about}</a>
           <a className="hover:text-fg" href="#/mentions-legales">{t.footer.legal}</a>
@@ -238,4 +226,3 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
     </aside>
   );
 }
-

@@ -70,7 +70,8 @@ export function Dropdown({ label, value, options, onChange, active = false, size
     else if (e.key === "Tab") setOpen(false);
   };
 
-  const h = size === "lg" ? "h-11 rounded-[11px] px-3.5" : "h-8 rounded-full pl-[11px] pr-[9px]";
+  const ghost = size === "ghost";
+  const h = size === "lg" ? "h-11 rounded-[11px] px-3.5" : ghost ? "h-7 rounded-lg pl-2 pr-1.5" : "h-8 rounded-full pl-[11px] pr-[9px]";
   return (
     <div className="relative" ref={root}>
       <button
@@ -81,8 +82,10 @@ export function Dropdown({ label, value, options, onChange, active = false, size
         aria-label={label}
         onClick={() => setOpen(o => !o)}
         onKeyDown={e => { if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); e.stopPropagation(); setOpen(true); } }}
-        className={`inline-flex items-center gap-1.5 whitespace-nowrap border text-[0.82rem] transition-colors ${h} ${
-          active ? "border-transparent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-sunk hover:text-fg"
+        className={`inline-flex items-center gap-1.5 whitespace-nowrap text-[0.82rem] transition-colors ${h} ${
+          ghost
+            ? active ? "font-medium text-fg hover:bg-sunk" : "text-muted hover:bg-sunk hover:text-fg"
+            : `border ${active ? "border-transparent bg-accent-soft text-accent-ink" : "border-line text-muted hover:bg-sunk hover:text-fg"}`
         } ${open ? "bg-sunk text-fg" : ""}`}
       >
         {current?.color && <span className="size-[7px] rounded-full" style={{ background: current.color }} />}

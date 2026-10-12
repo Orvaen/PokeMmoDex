@@ -64,7 +64,7 @@ const fr = {
   ivAll31: "Tout à 31", ivGoal: "Comme l'objectif", ivNone: "Tout vider", ivExact: "Valeurs précises", ivPaste: "ou tape", ivPastePh: "31/31/x/31/31/31",
   natPlus: "Augmente", natMinus: "Baisse", natNeutral: "Neutre", natPlan: "Celle du plan", natPick: "Clique une stat qui monte, puis une qui baisse.",
   autoMoves: "4 attaques conseillées", autoMovesAll: "Attaques conseillées pour toute l'équipe", movesKeepOpen: "Clique pour ajouter, encore {n}", moreMoves: "Ajouter une attaque", done: "Terminé",
-  toolsNav: "Outils", navShort: { team: "Équipe", ev: "Hordes EV", moves: "Capacités", natures: "Natures", tuto: "Tutos" },
+  toolsNav: "Outils", pokedexNav: "Pokédex", toggleTools: "Afficher ou masquer les outils", navShort: { team: "Équipe", ev: "Hordes EV", moves: "Capacités", natures: "Natures", tuto: "Tutos" },
   breedTitle: "Élever", eggOf: "Œuf :", eggGroups: "Groupes œuf", genderless: "Asexué", maleOnly: "Uniquement ♂", femaleOnly: "Uniquement ♀",
   cannotBreed: "Ce Pokémon ne peut pas se reproduire. Il faut le capturer.",
   roles: {
@@ -221,7 +221,7 @@ const en = {
   ivAll31: "All 31", ivGoal: "Same as goal", ivNone: "Clear all", ivExact: "Exact values", ivPaste: "or type", ivPastePh: "31/31/x/31/31/31",
   natPlus: "Raises", natMinus: "Lowers", natNeutral: "Neutral", natPlan: "The plan's one", natPick: "Click a stat that goes up, then one that goes down.",
   autoMoves: "4 suggested moves", autoMovesAll: "Suggested moves for the whole team", movesKeepOpen: "Click to add, {n} left", moreMoves: "Add a move", done: "Done",
-  toolsNav: "Tools", navShort: { team: "Team", ev: "EV hordes", moves: "Moves", natures: "Natures", tuto: "Guides" },
+  toolsNav: "Tools", pokedexNav: "Pokédex", toggleTools: "Show or hide tools", navShort: { team: "Team", ev: "EV hordes", moves: "Moves", natures: "Natures", tuto: "Guides" },
   breedTitle: "Breed", eggOf: "Egg:", eggGroups: "Egg groups", genderless: "Genderless", maleOnly: "Male only", femaleOnly: "Female only",
   cannotBreed: "This Pokémon can't breed. You have to catch it.",
   roles: {

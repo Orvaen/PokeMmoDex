@@ -14,7 +14,7 @@ Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglai
 - **Talents** : description au survol (texte officiel français + détail), noms français officiels
 - Faiblesses (table des types Gen 5, sans Fée), évolutions, tiers PvP, EV donnés
 - Recherche par nom FR ou EN, avec ou sans accents, ou par numéro (`94`, `094`, `#94`)
-- Barre latérale redimensionnable (glisser le bord, double-clic pour revenir) et repliable (bouton ou `Ctrl B`)
+- Barre latérale sobre (lignes simples, icônes au trait, section « Outils » repliable), redimensionnable (glisser le bord, double-clic pour revenir) et masquable (bouton ou `Ctrl B`)
 - Clavier : `Ctrl K` pour chercher, `↑` `↓` dans la liste, `←` `→` pour changer de Pokémon
 - Thème clair et sombre, pages légales (mentions légales, confidentialité, cookies)
 
