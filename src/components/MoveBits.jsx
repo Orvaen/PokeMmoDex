@@ -51,10 +51,10 @@ export function MoveTable({ rows, extraLabel, stab = [] }) {
           {rows.map(({ mv, extra }, i) => {
             const isStab = stab.includes(mv.type) && mv.cat !== "N";
             return (
-              <tr key={mv.id + "-" + i} className="border-b border-line last:border-0 hover:bg-sunk">
+              <tr key={mv.id + "-" + i} onClick={e => { if (!e.target.closest("a")) location.hash = href({ page: "move", id: mv.id }).slice(1); }} className="group cursor-pointer border-b border-line last:border-0 hover:bg-sunk">
                 {extraLabel && <td className="px-3 py-1.5 font-mono text-[0.8rem] text-muted">{extra}</td>}
                 <td className="px-3 py-1.5">
-                  <a href={href({ page: "move", id: mv.id })} className="inline-flex items-center gap-1.5 font-medium hover:text-accent-ink">
+                  <a href={href({ page: "move", id: mv.id })} className="inline-flex items-center gap-1.5 font-medium underline decoration-line underline-offset-4 group-hover:text-accent-ink group-hover:decoration-accent">
                     {moveName(mv, lang)}
                     {isStab && <span title={t.stabHint} className="rounded bg-accent-soft px-1 text-[0.62rem] font-semibold text-accent-ink">STAB</span>}
                   </a>

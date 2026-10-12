@@ -93,9 +93,9 @@ export default function MovesListPage() {
             </thead>
             <tbody>
               {rows.map(({ mv, n }) => (
-                <tr key={mv.id} className="border-b border-line last:border-0 hover:bg-sunk">
+                <tr key={mv.id} onClick={e => { if (!e.target.closest("a")) location.hash = href({ page: "move", id: mv.id }).slice(1); }} className="group cursor-pointer border-b border-line last:border-0 hover:bg-sunk">
                   <td className="px-3 py-1.5">
-                    <a href={href({ page: "move", id: mv.id })} className="inline-flex items-center gap-1.5 font-medium hover:text-accent-ink">
+                    <a href={href({ page: "move", id: mv.id })} className="inline-flex items-center gap-1.5 font-medium underline decoration-line underline-offset-4 group-hover:text-accent-ink group-hover:decoration-accent">
                       {mv.tm && <TmBadge tm={mv.tm} />}{moveName(mv, lang)}
                     </a>
                   </td>
@@ -105,7 +105,7 @@ export default function MovesListPage() {
                   <td className="px-2 py-1.5 text-right font-mono tabular-nums">{mv.acc ?? "—"}</td>
                   <td className="px-2 py-1.5 text-right font-mono tabular-nums">{mv.pp}</td>
                   <td className="px-3 py-1.5 text-right">
-                    <a href={href({ page: "move", id: mv.id })} className="font-mono tabular-nums text-accent-ink underline decoration-accent/30 underline-offset-4 hover:decoration-accent">{n}</a>
+                    <a href={href({ page: "move", id: mv.id })} className="font-mono tabular-nums text-muted group-hover:text-accent-ink">{n}</a>
                   </td>
                 </tr>
               ))}
