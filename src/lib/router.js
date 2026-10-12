@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 //   #/                       → accueil (liste)
 //   #/pokemon/94             → fiche
 //   #/pokemon/94/lieux       → lieux
-//   #/pokemon/94/elevage     → élevage
+//   #/pokemon/94/elevage     → élevage (?plan=… : plan partagé par lien)
 //   #/lieu/<clé>             → page d'un lieu
 //   #/tutoriels
 //   #/a-propos, #/mentions-legales, #/confidentialite, #/cookies
@@ -12,13 +12,15 @@ export const LEGAL_PAGES = ["a-propos", "mentions-legales", "confidentialite", "
 const TABS = ["fiche", "lieux", "elevage"];
 
 export function parseHash(hash) {
-  const h = decodeURIComponent(hash.replace(/^#\/?/, ""));
+  const [rawPath, query = ""] = hash.replace(/^#\/?/, "").split("?");
+  const h = decodeURIComponent(rawPath);
+  const plan = new URLSearchParams(query).get("plan");
   // anciens liens : #94 et #breed-94
   const old = h.match(/^(breed-)?(\d+)$/);
   if (old) return { page: "pokemon", id: +old[2], tab: old[1] ? "elevage" : "fiche" };
   const parts = h.split("/").filter(Boolean);
   if (!parts.length) return { page: "home" };
-  if (parts[0] === "pokemon" && /^\d+$/.test(parts[1] || "")) return { page: "pokemon", id: +parts[1], tab: TABS.includes(parts[2]) ? parts[2] : "fiche" };
+  if (parts[0] === "pokemon" && /^\d+$/.test(parts[1] || "")) return { page: "pokemon", id: +parts[1], tab: TABS.includes(parts[2]) ? parts[2] : "fiche", plan };
   if (parts[0] === "lieu" && parts[1]) return { page: "location", key: parts.slice(1).join("/") };
   if (parts[0] === "tutoriels") return { page: "tutorials" };
   if (LEGAL_PAGES.includes(parts[0])) return { page: "legal", slug: parts[0] };

@@ -4,6 +4,7 @@ import { NATURES, PRICE_DEFAULTS, abilName, abilityRanking, breedInfo, buildTree
 import { nameOf, useLang } from "../lib/i18n.js";
 import { useStored } from "../lib/storage.js";
 import { href } from "../lib/router.js";
+import { decodePlan, encodePlan, shareUrl } from "../lib/share.js";
 import { Dropdown, Sprite } from "../components/ui.jsx";
 import PokemonForm from "../components/PokemonForm.jsx";
 
@@ -12,7 +13,7 @@ const btn = "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[0.84
 const btnMain = `${btn} bg-fg font-medium text-bg hover:bg-accent-ink`;
 const btnGhost = `${btn} border border-line text-fg hover:border-accent`;
 
-export default function Breeding({ p }) {
+export default function Breeding({ p, shared }) {
   const { lang, t } = useLang();
   const info = useMemo(() => breedInfo(p), [p]);
   const finals = useMemo(() => finalsFrom(p), [p]);
@@ -24,15 +25,30 @@ export default function Breeding({ p }) {
   );
   const allowedIds = useMemo(() => new Set(allowed.map(q => q.id)), [allowed]);
 
-  const [ivs, setIvs] = useStored("ivs", STATS);
-  const [natured, setNatured] = useStored("natured", true);
+  // Plan partagé par lien : on l'affiche sur une copie temporaire, sans toucher aux données du visiteur
+  const sharedData = useMemo(() => (shared ? decodePlan(shared) : null), [shared]);
+  const isShared = !!sharedData && famIds.has(sharedData.species);
+
+  const [storedIvs, setStoredIvs] = useStored("ivs", STATS);
+  const [storedNatured, setStoredNatured] = useStored("natured", true);
+  const [storedBox, setStoredBox] = useStored("box", []);
+  const [tmpIvs, setTmpIvs] = useState(() => sharedData?.ivs ?? STATS);
+  const [tmpNatured, setTmpNatured] = useState(() => sharedData?.natured ?? true);
+  const [tmpBox, setTmpBox] = useState(() => sharedData?.box ?? []);
+  const [ivs, setIvs] = isShared ? [tmpIvs, setTmpIvs] : [storedIvs, setStoredIvs];
+  const [natured, setNatured] = isShared ? [tmpNatured, setTmpNatured] : [storedNatured, setStoredNatured];
+  const [box, setBox] = isShared ? [tmpBox, setTmpBox] : [storedBox, setStoredBox];
+
   const [prices, setPrices] = useStored("prices", PRICE_DEFAULTS);
-  const [box, setBox] = useStored("box", []);
   const [showTree, setShowTree] = useState(false);
   const [pricesOpen, setPricesOpen] = useState(false);
-  const [form, setForm] = useState(null); // { mode: "add" | "edit" | "done", item?, node? }
-  const [targetId, setTargetId] = useState(null);
-  const [natureChoice, setNatureChoice] = useState(null);
+  const [form, setForm] = useState(null); // { mode: "add" | "edit" | "done", item?, nodeId? }
+  const [targetId, setTargetId] = useState(() => (isShared ? sharedData.target : null));
+  const [natureChoice, setNatureChoice] = useState(() => (isShared && sharedData.nature ? { k: sharedData.nature, for: sharedData.target } : null));
+  const [sharePanel, setSharePanel] = useState(false);
+  const [shareName, setShareName] = useStored("shareName", "");
+  const [copied, setCopied] = useState(false);
+  const [imported, setImported] = useState(false);
 
   const target = finals.find(f => f.id === targetId) || finals[0];
   const rec = recommend(target.stats);
@@ -90,16 +106,71 @@ export default function Breeding({ p }) {
   };
 
   const nodeCtx = { info, nature, lang, t };
+
+  // ---------- Partage ----------
+  const link = shareUrl(p.id, encodePlan({ species: p.id, target: target.id, ivs: chosen, natured, nature, box: myBox, name: shareName }));
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    catch { document.getElementById("share-link")?.select(); }
+  };
+  const importShared = () => {
+    const stamp = Date.now();
+    setStoredBox(cur => [...cur, ...sharedData.box.map((it, k) => ({ ...it, id: stamp + k }))]);
+    setImported(true);
+  };
+  const leaveShared = () => { location.hash = href({ page: "pokemon", id: p.id, tab: "elevage" }).slice(1); };
   const ready = sum ? sum.steps.flat().filter(n => n.kids.every(k => !k.kids)) : [];
 
   return (
     <>
       {head}
 
+      {isShared ? (
+        <section className="grid gap-3 rounded-2xl border border-accent bg-accent-soft p-4">
+          <div>
+            <h2 className="text-[1.05rem] font-medium">{sharedData.name ? t.sharedBy(sharedData.name) : t.sharedPlan}</h2>
+            <p className="mt-1 text-[0.86rem] text-muted">{t.sharedText(sharedData.box.length)}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {sharedData.box.length > 0 && (
+              imported
+                ? <span className={`${btn} bg-panel text-accent-ink`}>✓ {t.importedDone}</span>
+                : <button type="button" className={btnMain} onClick={importShared}>{t.importShared(sharedData.box.length)}</button>
+            )}
+            <button type="button" className={`${btnGhost} bg-panel`} onClick={leaveShared}>{t.backToMine}</button>
+          </div>
+        </section>
+      ) : (
+        <section className="grid gap-3 rounded-2xl border border-line bg-panel p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-[1.05rem] font-medium">{t.shareTitle}</h2>
+              <p className="mt-0.5 text-[0.84rem] text-muted">{t.shareText}</p>
+            </div>
+            <button type="button" aria-expanded={sharePanel} className={sharePanel ? btnGhost : btnMain} onClick={() => setSharePanel(o => !o)}>{sharePanel ? t.close : t.shareBtn}</button>
+          </div>
+          {sharePanel && (
+            <div className="grid gap-2.5 rounded-xl bg-sunk p-3">
+              <label className="grid gap-1 text-[0.8rem] text-muted">
+                {t.shareName}
+                <input id="share-name" value={shareName} maxLength={24} onChange={e => setShareName(e.target.value)} placeholder={t.shareNamePh}
+                  className="h-9 max-w-[260px] rounded-[9px] border border-line bg-panel px-2.5 text-[0.9rem] text-fg focus:border-accent focus:outline-none" />
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <input id="share-link" readOnly value={link} onFocus={e => e.target.select()}
+                  className="h-9 min-w-0 flex-1 basis-[260px] rounded-[9px] border border-line bg-panel px-2.5 font-mono text-[0.76rem] text-muted" />
+                <button type="button" className={btnMain} onClick={copyLink}>{copied ? `✓ ${t.copied}` : t.copyLink}</button>
+              </div>
+              <p className="text-[0.78rem] text-faint">{t.shareNote(myBox.length)}</p>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* 1. Objectif */}
       <section className="grid gap-4 rounded-2xl border border-line bg-panel p-4">
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-[1.05rem] font-medium"><span className="mr-2 font-mono text-faint">1</span>{t.goalTitle}</h2>
+          <h2 className="text-[1.05rem] font-medium"><span className="mr-2 font-mono text-faint">1</span>{isShared ? t.goalTitleShared : t.goalTitle}</h2>
           {finals.length > 1 && (
             <Dropdown label={t.evolvesTo} active value={String(target.id)} onChange={v => setTargetId(+v)} align="right"
               options={finals.map(f => ({ value: String(f.id), label: nameOf(f, lang), short: `→ ${nameOf(f, lang)}` }))} />
@@ -147,10 +218,10 @@ export default function Breeding({ p }) {
       {/* 2. Mes Pokémon */}
       <section className="grid gap-3 rounded-2xl border border-line bg-panel p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-[1.05rem] font-medium"><span className="mr-2 font-mono text-faint">2</span>{t.boxTitle}</h2>
+          <h2 className="text-[1.05rem] font-medium"><span className="mr-2 font-mono text-faint">2</span>{isShared ? t.boxTitleShared : t.boxTitle}</h2>
           {!form && <button type="button" className={btnMain} onClick={() => setForm({ mode: "add" })}>+ {t.addPokemon}</button>}
         </div>
-        <p className="text-[0.84rem] text-muted">{t.boxHint}</p>
+        <p className="text-[0.84rem] text-muted">{isShared ? t.boxHintShared : t.boxHint}</p>
         {form && form.mode !== "done" && (
           <PokemonForm key={form.item?.id || "new"} initial={form.item} allowed={allowed} title={form.mode === "edit" ? t.editPokemon : t.addPokemon} onSave={saveItem} onCancel={() => setForm(null)} />
         )}

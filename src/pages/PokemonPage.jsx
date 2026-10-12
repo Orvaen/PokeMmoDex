@@ -7,7 +7,7 @@ import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";
 import LocationsTab from "./LocationsTab.jsx";
 import Breeding from "./Breeding.jsx";
 
-export default function PokemonPage({ p, tab, prev, next }) {
+export default function PokemonPage({ p, tab, plan, prev, next }) {
   const { lang, t } = useLang();
 
   // ← → pour passer au Pokémon précédent ou suivant
@@ -64,7 +64,7 @@ export default function PokemonPage({ p, tab, prev, next }) {
         )}
       </div>
 
-      {tab === "lieux" ? <LocationsTab p={p} /> : tab === "elevage" ? <Breeding key={p.id} p={p} /> : <Overview p={p} />}
+      {tab === "lieux" ? <LocationsTab p={p} /> : tab === "elevage" ? <Breeding key={p.id + (plan || "")} p={p} shared={plan} /> : <Overview p={p} />}
     </div>
   );
 }

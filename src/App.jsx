@@ -64,7 +64,7 @@ export default function App() {
 
   let main;
   if (route.page === "pokemon" && !pokemon) main = <NotFound />;
-  else if (pokemon) main = <PokemonPage p={pokemon} tab={route.tab || "fiche"} prev={list[i - 1]} next={list[i + 1]} />;
+  else if (pokemon) main = <PokemonPage p={pokemon} tab={route.tab || "fiche"} plan={route.plan} prev={list[i - 1]} next={list[i + 1]} />;
   else if (route.page === "location") main = <LocationPage locKey={route.key} />;
   else if (route.page === "legal") main = <LegalPage slug={route.slug} />;
   else if (route.page === "tutorials") main = <TutorialsPage />;
