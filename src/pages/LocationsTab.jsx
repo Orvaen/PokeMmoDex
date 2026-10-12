@@ -49,6 +49,7 @@ export default function LocationsTab({ p }) {
       <div>
         <h1 className="text-balance text-[clamp(1.7rem,3.6vw,2.5rem)] font-light leading-[1.05] tracking-[-0.04em]">{t.locationsTitle}</h1>
         {hasHorde && <p className="mt-2 text-[0.9rem] text-muted">{t.hordeHint}</p>}
+        <a href={href({ page: "shiny", id: p.id })} className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[0.82rem] text-muted hover:border-accent hover:text-fg">{Icon.sparkle}{t.sh.cta}</a>
       </div>
       {[...byRegion.entries()].sort((a, b) => a[0] - b[0]).map(([region, places]) => {
         const bases = [...places.keys()];

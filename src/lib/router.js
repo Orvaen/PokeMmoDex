@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 //   #/pokemon/94/capacites  → capacités du Pokémon
 //   #/capacites, #/capacite/89 → liste des capacités, page d'une capacité
 //   #/equipe (?t=… : équipe partagée par lien)
-//   #/essaims (essaims et alphas)
+//   #/essaims (essaims et alphas), #/shiny?p=6 (chasse shiny)
 //   #/tutoriels, #/hordes-ev, #/natures, #/baies (?c=ev : une famille), #/talents, #/talent/<nom>
 //   #/a-propos, #/mentions-legales, #/confidentialite, #/cookies
 export const LEGAL_PAGES = ["a-propos", "mentions-legales", "confidentialite", "cookies"];
@@ -30,6 +30,7 @@ export function parseHash(hash) {
   if (parts[0] === "tutoriels") return { page: "tutorials" };
   if (parts[0] === "hordes-ev") return { page: "evhordes" };
   if (parts[0] === "essaims") return { page: "swarms" };
+  if (parts[0] === "shiny") return { page: "shiny", id: /^\d+$/.test(params.get("p") || "") ? +params.get("p") : null };
   if (parts[0] === "natures") return { page: "natures" };
   if (parts[0] === "objets") return { page: "items" };
   if (parts[0] === "talents") return { page: "abilities" };
@@ -49,6 +50,7 @@ export function href(route) {
   if (route.page === "tutorials") return "#/tutoriels";
   if (route.page === "evhordes") return "#/hordes-ev";
   if (route.page === "swarms") return "#/essaims";
+  if (route.page === "shiny") return "#/shiny" + (route.id ? "?p=" + route.id : "");
   if (route.page === "natures") return "#/natures";
   if (route.page === "items") return "#/objets";
   if (route.page === "abilities") return "#/talents";
