@@ -31,6 +31,14 @@ export default function App() {
   const [lang, setLang] = useStored("lang", navigator.language?.startsWith("fr") === false ? "en" : "fr");
   const [theme, setTheme] = useStored("theme", null);
   const [view, setView] = useStored("view", "list");
+  // Barre latérale : largeur réglable et repliable (sur ordinateur)
+  const [sideW, setSideW] = useStored("sidebarW", 340);
+  const [sideHidden, setSideHidden] = useStored("sidebarHidden", false);
+  useEffect(() => {
+    const onKey = e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") { e.preventDefault(); setSideHidden(h => !h); } };
+    addEventListener("keydown", onKey);
+    return () => removeEventListener("keydown", onKey);
+  }, []);
   const [filters, setFilters] = useState({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false });
   const route = useRoute();
   const t = STRINGS[lang];
@@ -88,11 +96,21 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <div className={`grid h-full grid-cols-[minmax(300px,380px)_minmax(0,1fr)] max-[860px]:grid-cols-1 ${cardsHome ? "max-[860px]:grid-rows-[auto_minmax(0,1fr)]" : ""}`}>
-        <Sidebar filters={filters} setFilters={setFilters} visible={visible} currentId={pokemon?.id} onToggleTheme={toggleTheme} route={route} view={view} setView={setView} />
+      <div
+        style={{ "--sbw": sideHidden ? "0px" : `${sideW}px` }}
+        className={`grid h-full grid-cols-[var(--sbw)_minmax(0,1fr)] max-[860px]:grid-cols-1 ${cardsHome ? "max-[860px]:grid-rows-[auto_minmax(0,1fr)]" : ""}`}
+      >
+        <Sidebar filters={filters} setFilters={setFilters} visible={visible} currentId={pokemon?.id} onToggleTheme={toggleTheme} route={route} view={view} setView={setView}
+          width={sideW} setWidth={setSideW} hidden={sideHidden} onHide={() => setSideHidden(true)} />
+        {sideHidden && (
+          <button type="button" onClick={() => setSideHidden(false)} aria-label={t.showPanel} title={`${t.showPanel} (Ctrl B)`}
+            className="fixed left-3 top-[calc(env(safe-area-inset-top,0px)+12px)] z-30 grid size-9 place-items-center rounded-[10px] border border-line bg-panel text-muted shadow-soft hover:text-fg max-[860px]:hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          </button>
+        )}
         <main
           id="main"
-          className={`min-h-0 overflow-y-auto ${
+          className={`min-h-0 overflow-y-auto min-[861px]:col-start-2 min-[861px]:row-start-1 ${sideHidden ? "min-[861px]:pl-12" : ""} ${
             cardsHome
               ? "max-[860px]:border-t max-[860px]:border-line"
               : `max-[860px]:fixed max-[860px]:inset-0 max-[860px]:z-20 max-[860px]:bg-bg max-[860px]:pb-[env(safe-area-inset-bottom)] max-[860px]:pt-[env(safe-area-inset-top)] max-[860px]:transition-transform max-[860px]:duration-300 ${open ? "" : "max-[860px]:invisible max-[860px]:translate-x-full"}`

@@ -6,7 +6,27 @@ import { Dropdown, Icon, Sprite } from "./ui.jsx";
 
 export const REPO = "https://github.com/rayan-studio/PokeMmoDex";
 
-export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route, view, setView }) {
+export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route, view, setView, width, setWidth, hidden, onHide }) {
+  // Redimensionnement à la souris (poignée sur le bord droit) ou au clavier (flèches)
+  const MIN_W = 260, MAX_W = 560;
+  const clampW = w => Math.round(Math.min(MAX_W, Math.max(MIN_W, w)));
+  const startResize = e => {
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    const move = ev => setWidth(clampW(ev.clientX));
+    const up = ev => {
+      handle.releasePointerCapture(ev.pointerId);
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", up);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", up);
+  };
   const { lang, t, setLang } = useLang();
   const listRef = useRef(null);
   const searchRef = useRef(null);
@@ -38,7 +58,26 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
 
   const sortKeys = Object.keys(t.sort);
   return (
-    <aside className="flex min-h-0 flex-col border-r border-line bg-panel max-[860px]:border-r-0">
+    <aside className={`relative flex min-h-0 min-w-0 flex-col border-r border-line bg-panel max-[860px]:border-r-0 ${hidden ? "min-[861px]:hidden" : ""}`}>
+      <div
+        role="separator"
+        aria-orientation="vertical"
+        aria-label={t.resizePanel}
+        aria-valuemin={MIN_W}
+        aria-valuemax={MAX_W}
+        aria-valuenow={width}
+        tabIndex={0}
+        title={t.resizeHint}
+        onPointerDown={startResize}
+        onDoubleClick={() => setWidth(340)}
+        onKeyDown={e => {
+          if (e.key === "ArrowLeft") { e.preventDefault(); setWidth(w => clampW(w - 20)); }
+          if (e.key === "ArrowRight") { e.preventDefault(); setWidth(w => clampW(w + 20)); }
+        }}
+        className="group absolute -right-[5px] top-0 z-20 h-full w-[10px] cursor-col-resize touch-none max-[860px]:hidden"
+      >
+        <span className="absolute left-1/2 top-0 h-full w-[2px] -translate-x-1/2 bg-transparent transition-colors group-hover:bg-accent group-focus-visible:bg-accent group-active:bg-accent" />
+      </div>
       <div className="grid gap-3 border-b border-line px-[18px] pb-3 pt-[18px]">
         <div className="flex items-center gap-2.5">
           <a href="#/" className="flex items-center gap-2.5 font-medium tracking-tight">
@@ -49,6 +88,9 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
             {t.siteTitle}
           </a>
           <span className="flex-1" />
+          <button type="button" onClick={onHide} aria-label={t.hidePanel} title={`${t.hidePanel} (Ctrl B)`} className="grid h-[30px] min-w-[30px] place-items-center rounded-lg border border-line text-muted hover:bg-sunk hover:text-fg max-[860px]:hidden">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M9.5 4.5v15M15.5 10l-2 2 2 2" /></svg>
+          </button>
           <button type="button" onClick={() => setLang(lang === "fr" ? "en" : "fr")} aria-label={t.langLabel} className="grid h-[30px] min-w-[30px] place-items-center rounded-lg border border-line px-2 text-[0.76rem] font-medium text-muted hover:bg-sunk hover:text-fg">
             {t.langBtn}
           </button>
