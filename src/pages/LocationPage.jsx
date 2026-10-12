@@ -6,6 +6,7 @@ import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";
 import { RarityChip } from "./LocationsTab.jsx";
 import RegionMap, { BASE_INDEX, MapLegend, placeName } from "../components/RegionMap.jsx";
 import { REGION_MAPS, accessPath, baseName } from "../data/maps.js";
+import { hmName, hmsFor } from "../data/hms.js";
 
 // Liens vers la page du lieu sur Poképédia (FR) et Bulbapedia (EN), qui montrent la vraie carte du jeu.
 // On ne copie pas leurs images : on y renvoie.
@@ -30,6 +31,7 @@ function AccessMap({ locKey, loc }) {
   const map = REGION_MAPS[loc.region];
   const ferry = path.some((n, i) => i > 0 && map.edges.some(e => e.ferry && ((e.a === n && e.b === path[i - 1]) || (e.b === n && e.a === path[i - 1]))));
   const variants = (BASE_INDEX[loc.region][base] || []).filter(k => k !== locKey);
+  const hms = hmsFor(locKey);
   return (
     <section className="grid grid-cols-[minmax(0,1fr)_minmax(240px,300px)] items-start gap-4 max-[1000px]:grid-cols-1">
       <div className="grid gap-2 rounded-2xl border border-line bg-panel p-3">
@@ -65,6 +67,12 @@ function AccessMap({ locKey, loc }) {
               {ferry && <p className="mt-2 text-[0.8rem] text-faint">{t.ferryNote}</p>}
             </>
           )}
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-line pt-3 text-[0.84rem]">
+            <span className="mr-1 text-muted">{t.evHmLabel}</span>
+            {hms.length ? hms.map(({ hm, opt }) => (
+              <span key={hm} className={`rounded-md px-2 py-0.5 text-[0.78rem] font-medium ${opt ? "border border-dashed border-line text-muted" : "bg-sunk"}`}>{hmName(hm, lang)}{opt ? ` (${t.hmOpt})` : ""}</span>
+            )) : <span className="text-muted">✓ {t.evNoHm}</span>}
+          </div>
         </div>
         <div className="rounded-2xl border border-line bg-panel p-4">
           <h2 className="eyebrow mb-2">{t.realMapTitle}</h2>

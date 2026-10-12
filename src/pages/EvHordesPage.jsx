@@ -6,6 +6,7 @@ import { useStored } from "../lib/storage.js";
 import { Dropdown, Icon, Sprite } from "../components/ui.jsx";
 import { placeName } from "../components/RegionMap.jsx";
 import { REGION_MAPS, accessPath, baseName, hasCenter } from "../data/maps.js";
+import { hmName, hmsFor } from "../data/hms.js";
 
 const HORDE = RARITIES.indexOf("Horde");
 const EV_MAX = 252;
@@ -24,7 +25,7 @@ const SPOTS = (() => {
       if (!spot.species.some(s => s.p.id === p.id)) spot.species.push({ p, min, max });
     }
   }
-  return [...map.values()].map(s => ({ ...s, center: centerInfo(s.loc) }));
+  return [...map.values()].map(s => ({ ...s, center: centerInfo(s.loc), hms: hmsFor(s.loc, s.method) }));
 })();
 
 // Distance au Centre Pokémon le plus proche, en nombre de zones à traverser
@@ -47,6 +48,7 @@ export default function EvHordesPage() {
   const [region, setRegion] = useState("");
   const [onlyPure, setOnlyPure] = useState(false);
   const [nearOnly, setNearOnly] = useState(false);
+  const [noHm, setNoHm] = useState(false);
   const [sort, setSort] = useState("yield");
 
   useEffect(() => {
@@ -66,9 +68,10 @@ export default function EvHordesPage() {
       .filter(Boolean)
       .filter(c => !onlyPure || c.share === 1)
       .filter(c => !nearOnly || c.center?.advice === "center")
+      .filter(c => !noHm || c.hms.every(h => h.opt))
       .sort((a, b) => (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
         || b.share - a.share || b.best - a.best || a.minLv - b.minLv);
-  }, [stat, region, onlyPure, nearOnly, sort]);
+  }, [stat, region, onlyPure, nearOnly, noHm, sort]);
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-7 px-8 pb-16 pt-[22px] max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -126,6 +129,14 @@ export default function EvHordesPage() {
           >
             {t.evNearOnly}
           </button>
+          <button
+            type="button"
+            aria-pressed={noHm}
+            onClick={() => setNoHm(v => !v)}
+            className={`h-8 rounded-full border px-3 text-[0.82rem] ${noHm ? "border-transparent bg-accent-soft font-medium text-accent-ink" : "border-line text-muted hover:text-fg"}`}
+          >
+            {t.evNoHmOnly}
+          </button>
           <Dropdown
             label={t.evSortBy}
             value={sort}
@@ -147,6 +158,7 @@ export default function EvHordesPage() {
 
       <div className="grid max-w-[70ch] gap-2 border-t border-line pt-4 text-[0.82rem] text-faint">
         <p>{t.evAdvHelp}</p>
+        <p>{t.hmNote}</p>
         <p>{t.evNote}</p>
       </div>
     </div>
@@ -212,7 +224,7 @@ function SpotCard({ c, stat }) {
   );
 }
 
-// Ligne « Centre Pokémon » : distance et conseil Centre / Baies Mepo
+// Bloc « Accès » : Centre le plus proche (avec conseil Centre / Baies Mepo) et CS nécessaires
 const ADV_STYLE = {
   center: "bg-[oklch(0.62_0.13_150/0.16)] text-[oklch(0.56_0.13_150)]",
   both: "bg-[oklch(0.75_0.13_80/0.2)] text-[oklch(0.6_0.12_70)]",
@@ -221,14 +233,26 @@ const ADV_STYLE = {
 function CenterRow({ c, region }) {
   const { lang, t } = useLang();
   const ce = c.center;
-  if (!ce) return <p className="flex items-center gap-2 px-1 text-[0.78rem] text-faint">{CROSS}{t.evCenterUnknown}</p>;
-  const label = ce.steps === 0 ? t.evCenterHere : t.evCenterAt(placeName(region, ce.city, lang), ce.steps);
-  const adv = { center: t.evAdvCenter, both: t.evAdvBoth, leppa: t.evAdvLeppa }[ce.advice];
+  const label = !ce ? t.evCenterUnknown : ce.steps === 0 ? t.evCenterHere : t.evCenterAt(placeName(region, ce.city, lang), ce.steps);
+  const adv = ce && { center: t.evAdvCenter, both: t.evAdvBoth, leppa: t.evAdvLeppa }[ce.advice];
   return (
-    <a href={href({ page: "location", key: c.loc })} title={t.accessTitle} className="flex items-center gap-2 rounded-lg px-1 text-[0.8rem] text-muted hover:text-fg">
-      {CROSS}
-      <span className="min-w-0 flex-1 leading-snug">{label}{ce.ferry ? ` · ${t.evFerry}` : ""}</span>
-      <span className={`flex-none rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${ADV_STYLE[ce.advice]}`}>{adv}</span>
+    <a href={href({ page: "location", key: c.loc })} title={t.accessTitle} className="grid gap-1.5 rounded-xl border border-line px-3 py-2.5 text-[0.8rem] transition-colors hover:border-accent">
+      <span className="flex items-center gap-2">
+        <span className="eyebrow flex-1">{t.evAccess}</span>
+        {adv && <span className={`flex-none rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${ADV_STYLE[ce.advice]}`}>{adv}</span>}
+      </span>
+      <span className="flex items-center gap-2 text-muted">
+        {CROSS}
+        <span className="min-w-0 flex-1 leading-snug">{label}{ce?.ferry ? ` · ${t.evFerry}` : ""}</span>
+      </span>
+      <span className="flex flex-wrap items-center gap-1.5 text-muted">
+        <span className="w-[14px] flex-none text-center font-mono text-[0.62rem] font-semibold tracking-tight">{t.evHmLabel}</span>
+        {c.hms.length ? c.hms.map(({ hm, opt }) => (
+          <span key={hm} className={`rounded-md px-1.5 py-px text-[0.72rem] font-medium ${opt ? "border border-dashed border-line text-muted" : "bg-sunk text-fg"}`}>
+            {hmName(hm, lang)}{opt ? ` (${t.hmOpt})` : ""}
+          </span>
+        )) : <span className="text-[0.76rem]">✓ {t.evNoHm}</span>}
+      </span>
     </a>
   );
 }
