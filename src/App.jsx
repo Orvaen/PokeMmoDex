@@ -9,6 +9,7 @@ const LocationPage = lazy(() => import("./pages/LocationPage.jsx"));
 const LegalPage = lazy(() => import("./pages/LegalPage.jsx"));
 const TutorialsPage = lazy(() => import("./pages/TutorialsPage.jsx"));
 const EvHordesPage = lazy(() => import("./pages/EvHordesPage.jsx"));
+const SwarmsPage = lazy(() => import("./pages/SwarmsPage.jsx"));
 import CardsPage from "./pages/CardsPage.jsx";
 const NaturesPage = lazy(() => import("./pages/NaturesPage.jsx"));
 const MovesListPage = lazy(() => import("./pages/MovesListPage.jsx"));
@@ -100,6 +101,7 @@ export default function App() {
   else if (route.page === "legal") main = <LegalPage slug={route.slug} />;
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
+  else if (route.page === "swarms") main = <SwarmsPage />;
   else if (route.page === "natures") main = <NaturesPage />;
   else if (route.page === "items") main = <ItemsPage />;
   else if (route.page === "abilities") main = <AbilitiesListPage />;

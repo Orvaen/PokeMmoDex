@@ -24,6 +24,9 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run build
+        env:
+          # Source en direct des essaims et alphas (facultatif) : variable de dépôt LIVE_URL
+          VITE_LIVE_URL: ${{ vars.LIVE_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
