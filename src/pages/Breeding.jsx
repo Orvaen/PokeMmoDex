@@ -7,6 +7,7 @@ import { href } from "../lib/router.js";
 import { decodePlan, encodePlan, shareUrl } from "../lib/share.js";
 import { Dropdown, Sprite } from "../components/ui.jsx";
 import PokemonForm from "../components/PokemonForm.jsx";
+import AbilityTag from "../components/AbilityTag.jsx";
 
 const DITTO = 132;
 const btn = "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[0.84rem]";
@@ -202,7 +203,7 @@ export default function Breeding({ p, shared }) {
           <span className="text-muted">{t.advice} :</span>
           <b className="font-medium">{natName(rec.primary, lang)}</b><span className="font-mono text-[0.74rem] text-accent-ink">{natFx(rec.primary, t)}</span>
           <span className="text-faint">·</span>
-          <b className="font-medium">{abilName(abil[0].name, lang)}</b>{abil[0].hidden && <span className="text-[0.74rem] text-accent-ink">({t.hiddenShort})</span>}
+          <AbilityTag name={abil[0].name} hidden={abil[0].hidden} size="sm" />
           <span className="text-faint">·</span>
           <b className="font-medium">{recIvs.length}×31</b>{rec.useless.length > 0 && <span className="text-muted">{t.withoutIv(rec.useless.map(s => t.short[s]).join(", "))}</span>}
           {!isRec && (

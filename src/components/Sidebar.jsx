@@ -172,6 +172,17 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           <span className="text-[0.74rem] text-faint">{t.evSub}</span>
         </a>
         <a
+          href="#/natures"
+          aria-current={route?.page === "natures" ? "page" : undefined}
+          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "natures" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
+        >
+          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.62_0.13_150)] text-white">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m7 14 5-5 5 5" /><path d="m7 20 5-5 5 5" opacity=".45" /></svg>
+          </span>
+          <span className="flex-1">{t.naturesNav}</span>
+          <span className="text-[0.74rem] text-faint">{t.naturesSub}</span>
+        </a>
+        <a
           href="#/tutoriels"
           aria-current={route?.page === "tutorials" ? "page" : undefined}
           className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "tutorials" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}

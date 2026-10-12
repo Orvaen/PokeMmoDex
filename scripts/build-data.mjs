@@ -2,7 +2,7 @@
 //
 // Sources (à cloner à côté, voir README) :
 //   - PokeMMO-Tools/pokemmo-data  : Pokémon, stats, lieux, noms FR (export du client PokeMMO)
-//   - PokeMMOZone/PokeMMO-Data     : tiers PvP
+//   - PokeMMOZone/PokeMMO-Data     : tiers PvP, noms et descriptions des talents
 //   - smogon/pokemon-showdown      : notes des talents et table des types Gen 5
 //
 // Usage : node scripts/build-data.mjs <pokemmo-data> <PokeMMO-Data> <pokemon-showdown>
@@ -79,6 +79,19 @@ const pokemon = monsters.map(m => {
   };
 });
 
+// Talents : noms français officiels et descriptions (PokeMMO-Data, repris de PokeAPI)
+const abilitiesRaw = readJSON(path.join(zoneDir, "data/abilities-data.json"));
+const abilities = {};
+for (const a of Object.values(abilitiesRaw)) {
+  const en = a.name_translations?.en?.name;
+  if (!en) continue;
+  const clean = x => (x || "").replace(/\s+/g, " ").trim();
+  abilities[en] = {
+    fr: a.name_translations?.fr?.name || en,
+    desc: { fr: clean(a.effect_translations?.fr?.effect), en: clean(a.effect || a.effect_translations?.en?.effect) },
+  };
+}
+
 // Notes des talents (Showdown)
 const abilitiesSrc = fs.readFileSync(path.join(psDir, "data/abilities.ts"), "utf8");
 const abilityRatings = {};
@@ -100,7 +113,7 @@ for (const def of TYPES) {
   typeChart[def] = Object.fromEntries(TYPES.map(atk => [atk, row[atk] || 0]));
 }
 
-const out = { pokemon, locations, methods: METHODS, rarities: RARITIES, regions: REGIONS, abilityRatings, typeChart, generated: new Date().toISOString().slice(0, 10) };
+const out = { pokemon, locations, methods: METHODS, rarities: RARITIES, regions: REGIONS, abilities, abilityRatings, typeChart, generated: new Date().toISOString().slice(0, 10) };
 const dest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/dex.json");
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.writeFileSync(dest, JSON.stringify(out));

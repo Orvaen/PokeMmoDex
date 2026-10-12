@@ -8,6 +8,8 @@ Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglai
 - **Cartes des régions** (schémas dessinés pour le site) : le lieu mis en avant et le chemin depuis le Centre Pokémon le plus proche
 - **Planificateur d'élevage** : tu saisis les Pokémon que tu as déjà (IV, nature, talent, genre) et le plan part de là. Étapes à faire dans l'ordre, bouton « Fait » qui met ta boîte à jour, nature et talent conseillés, liste des Pokémon à trouver, objets et coût estimé. **Partage par lien** : le plan et les Pokémon tiennent dans l'adresse, sans serveur
 - **Tutoriels** : vidéos YouTube classées par thème (débuter, argent, revanches d'arène, Ho-Oh et Red, élevage), liste dans `src/data/tutorials.js`
+- **Natures** : tableau des 25 natures (stat augmentée / baissée) et recherche
+- **Talents** : description au survol (texte officiel français + détail), noms français officiels
 - Faiblesses (table des types Gen 5, sans Fée), évolutions, tiers PvP, EV donnés
 - Recherche par nom FR ou EN, avec ou sans accents, ou par numéro (`94`, `094`, `#94`)
 - Clavier : `Ctrl K` pour chercher, `↑` `↓` dans la liste, `←` `→` pour changer de Pokémon
@@ -33,7 +35,7 @@ Le workflow `.github/workflows/deploy.yml` construit et publie le site à chaque
 `src/data/dex.json` est généré par `scripts/build-data.mjs` à partir de :
 
 - [PokeMMO-Tools/pokemmo-data](https://github.com/PokeMMO-Tools/pokemmo-data) : Pokémon, stats, talents, groupes œuf, lieux et noms français, exportés du client PokeMMO
-- [PokeMMOZone/PokeMMO-Data](https://github.com/PokeMMOZone/PokeMMO-Data) : tiers PvP
+- [PokeMMOZone/PokeMMO-Data](https://github.com/PokeMMOZone/PokeMMO-Data) : tiers PvP, noms et descriptions des talents
 - [smogon/pokemon-showdown](https://github.com/smogon/pokemon-showdown) : notes des talents et table des types Gen 5
 
 Pour mettre à jour, clone ces trois dépôts à côté de celui-ci puis lance :

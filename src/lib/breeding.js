@@ -1,4 +1,4 @@
-import { ALL, STATS, ABILITY_RATINGS, familyRoot, family, genderInfo, RARITIES } from "./data.js";
+import { ALL, STATS, ABILITY_RATINGS, abilityInfo, familyRoot, family, genderInfo, RARITIES } from "./data.js";
 
 export const NATURES = {
   Hardy: [null, null, "Hardi"], Lonely: ["atk", "def", "Solo"], Brave: ["atk", "spe", "Brave"], Adamant: ["atk", "spa", "Rigide"], Naughty: ["atk", "spd", "Mauvais"],
@@ -46,7 +46,7 @@ export const ABIL_FR = {
   "Rattled": "Phobique", "Magic Bounce": "Miroir Magik", "Sap Sipper": "Herbivore", "Prankster": "Farceur", "Sand Force": "Force Sable",
   "Iron Barbs": "Épine de Fer", "Zen Mode": "Mode Transe", "Victory Star": "Victorieux", "Turboblaze": "TurboBrasier", "Teravolt": "Téra-Voltage",
 };
-export const abilName = (a, lang) => (lang === "fr" ? ABIL_FR[a] || a : a);
+export const abilName = (a, lang) => (lang === "fr" ? abilityInfo(a)?.fr || ABIL_FR[a] || a : a);
 
 // Nature et IV utiles, déduits des stats de l'évolution finale
 export function recommend(s) {
@@ -66,7 +66,7 @@ export function recommend(s) {
 // Talents classés selon les notes de Showdown ; le 3e emplacement est le talent caché
 export function abilityRanking(p) {
   return p.abilities
-    .map((name, i) => (name ? { name, hidden: i === 2, rating: ABILITY_RATINGS[name] ?? 0 } : null))
+    .map((name, i) => (name ? { name, hidden: i === 2, rating: ABILITY_RATINGS[name] ?? ABILITY_RATINGS[{ Compoundeyes: "Compound Eyes", Lightningrod: "Lightning Rod" }[name]] ?? 0 } : null))
     .filter(Boolean)
     .filter((a, i, arr) => arr.findIndex(b => b.name === a.name) === i)
     .sort((a, b) => b.rating - a.rating || a.hidden - b.hidden);

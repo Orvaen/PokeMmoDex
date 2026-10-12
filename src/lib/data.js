@@ -9,6 +9,10 @@ export const REGIONS = dex.regions;
 export const TYPE_CHART = dex.typeChart;
 export const ABILITY_RATINGS = dex.abilityRatings;
 
+// Talents : nom français officiel et description. Quelques noms du client ont une autre orthographe.
+const ABILITY_ALIAS = { Compoundeyes: "Compound Eyes", Lightningrod: "Lightning Rod" };
+export const abilityInfo = name => dex.abilities[ABILITY_ALIAS[name] || name] || null;
+
 export const STATS = ["hp", "atk", "def", "spa", "spd", "spe"];
 
 // Couleurs de type harmonisées : même luminosité et saturation, seule la teinte change

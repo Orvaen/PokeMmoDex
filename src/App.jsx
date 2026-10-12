@@ -10,6 +10,7 @@ import LegalPage from "./pages/LegalPage.jsx";
 import TutorialsPage from "./pages/TutorialsPage.jsx";
 import EvHordesPage from "./pages/EvHordesPage.jsx";
 import CardsPage from "./pages/CardsPage.jsx";
+import NaturesPage from "./pages/NaturesPage.jsx";
 
 const DEFAULT_ID = 6;
 
@@ -74,6 +75,7 @@ export default function App() {
   else if (route.page === "legal") main = <LegalPage slug={route.slug} />;
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
+  else if (route.page === "natures") main = <NaturesPage />;
   else main = <NotFound />;
 
   // Remonte en haut à chaque changement de page

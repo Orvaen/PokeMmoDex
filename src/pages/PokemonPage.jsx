@@ -6,6 +6,7 @@ import { href } from "../lib/router.js";
 import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";
 import LocationsTab from "./LocationsTab.jsx";
 import Breeding from "./Breeding.jsx";
+import AbilityTag from "../components/AbilityTag.jsx";
 
 export default function PokemonPage({ p, tab, plan, prev, next }) {
   const { lang, t } = useLang();
@@ -143,12 +144,7 @@ function Overview({ p }) {
 
       <Section title={t.abilities}>
         <div className="flex flex-wrap gap-2">
-          {abilities.map(({ a, hidden }) => (
-            <span key={a} className="inline-flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-2 text-[0.9rem]">
-              {abilName(a, lang)}
-              {hidden && <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[0.7rem] font-medium text-accent-ink">{t.hidden}</span>}
-            </span>
-          ))}
+          {abilities.map(({ a, hidden }) => <AbilityTag key={a} name={a} hidden={hidden} />)}
         </div>
       </Section>
 
