@@ -4,6 +4,19 @@ import { nameOf, typeName, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Dropdown, Icon, Sprite } from "./ui.jsx";
 
+const TOOLS = [
+  { key: "team", href: "#/equipe", pages: ["team"], full: "teamNav", col: "oklch(0.58 0.15 290)",
+    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><circle cx="6" cy="8" r="2.5" /><circle cx="12" cy="8" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="6" cy="16" r="2.5" /><circle cx="12" cy="16" r="2.5" /><circle cx="18" cy="16" r="2.5" /></svg> },
+  { key: "ev", href: "#/hordes-ev", pages: ["evhordes"], full: "evNav", col: "oklch(0.68 0.15 340)",
+    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg> },
+  { key: "moves", href: "#/capacites", pages: ["moves", "move"], full: "movesNav", col: "oklch(0.6 0.14 255)",
+    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></svg> },
+  { key: "natures", href: "#/natures", pages: ["natures"], full: "naturesNav", col: "oklch(0.62 0.13 150)",
+    icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m7 14 5-5 5 5" /><path d="m7 20 5-5 5 5" opacity=".45" /></svg> },
+  { key: "tuto", href: "#/tutoriels", pages: ["tutorials"], full: "tutoTitle", col: "oklch(0.58 0.21 27)",
+    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg> },
+];
+
 export const REPO = "https://github.com/rayan-studio/PokeMmoDex";
 
 export default function Sidebar({ filters, setFilters, visible, currentId, onToggleTheme, route, view, setView, width, setWidth, hidden, onHide }) {
@@ -201,63 +214,18 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
       </ul>
 
       {view === "cards" && <div className="flex-1 max-[860px]:hidden" />}
-      <div className={`grid gap-0.5 border-t border-line px-2 pt-2 ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
-        <a
-          href="#/equipe"
-          aria-current={route?.page === "team" ? "page" : undefined}
-          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "team" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
-        >
-          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.58_0.15_290)] text-white">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true"><circle cx="6" cy="8" r="2.5" /><circle cx="12" cy="8" r="2.5" /><circle cx="18" cy="8" r="2.5" /><circle cx="6" cy="16" r="2.5" /><circle cx="12" cy="16" r="2.5" /><circle cx="18" cy="16" r="2.5" /></svg>
-          </span>
-          <span className="flex-1">{t.teamNav}</span>
-          <span className="text-[0.74rem] text-faint">{t.teamSub}</span>
-        </a>
-        <a
-          href="#/hordes-ev"
-          aria-current={route?.page === "evhordes" ? "page" : undefined}
-          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "evhordes" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
-        >
-          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.68_0.15_340)] text-white">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>
-          </span>
-          <span className="flex-1">{t.evNav}</span>
-          <span className="text-[0.74rem] text-faint">{t.evSub}</span>
-        </a>
-        <a
-          href="#/capacites"
-          aria-current={route?.page === "moves" || route?.page === "move" ? "page" : undefined}
-          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "moves" || route?.page === "move" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
-        >
-          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.6_0.14_255)] text-white">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></svg>
-          </span>
-          <span className="flex-1">{t.movesNav}</span>
-          <span className="text-[0.74rem] text-faint">{t.movesSub}</span>
-        </a>
-        <a
-          href="#/natures"
-          aria-current={route?.page === "natures" ? "page" : undefined}
-          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "natures" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
-        >
-          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.62_0.13_150)] text-white">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m7 14 5-5 5 5" /><path d="m7 20 5-5 5 5" opacity=".45" /></svg>
-          </span>
-          <span className="flex-1">{t.naturesNav}</span>
-          <span className="text-[0.74rem] text-faint">{t.naturesSub}</span>
-        </a>
-        <a
-          href="#/tutoriels"
-          aria-current={route?.page === "tutorials" ? "page" : undefined}
-          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "tutorials" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
-        >
-          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.58_0.21_27)] text-white">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
-          </span>
-          <span className="flex-1">{t.tutoTitle}</span>
-          <span className="text-[0.74rem] text-faint">{t.tutoSub}</span>
-        </a>
-      </div>
+      <nav aria-label={t.toolsNav} className={`grid grid-cols-5 gap-1 border-t border-line px-2 pt-2 ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
+        {TOOLS.map(tool => {
+          const on = tool.pages.includes(route?.page);
+          return (
+            <a key={tool.href} href={tool.href} title={t[tool.full]} aria-current={on ? "page" : undefined}
+              className={`grid min-w-0 justify-items-center gap-1 rounded-[10px] px-0.5 py-1.5 text-center ${on ? "bg-accent-soft text-accent-ink" : "text-muted hover:bg-sunk hover:text-fg"}`}>
+              <span className="grid size-7 place-items-center rounded-lg text-white" style={{ background: tool.col }}>{tool.icon}</span>
+              <span className={`w-full truncate text-[0.7rem] leading-tight ${on ? "font-medium" : ""}`}>{t.navShort[tool.key]}</span>
+            </a>
+          );
+        })}
+      </nav>
       <footer className={`px-[18px] pb-3 pt-2 text-[0.74rem] text-faint ${view === "cards" ? "max-[860px]:hidden" : ""}`}>
         <nav className="flex flex-wrap gap-x-3 gap-y-1">
           <a className="hover:text-fg" href="#/a-propos">{t.footer.about}</a>

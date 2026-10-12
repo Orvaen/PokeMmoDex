@@ -4,7 +4,7 @@ import { nameOf, typeName, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { useStored } from "../lib/storage.js";
 import { moveName, useMoves } from "../lib/moves.js";
-import { TEAM_SIZE, analyzeTeam, decodeTeam, encodeTeam, resistersOf, suggestFor } from "../lib/team.js";
+import { TEAM_SIZE, analyzeTeam, autoMoves, decodeTeam, encodeTeam, resistersOf, suggestFor } from "../lib/team.js";
 import { Icon, Sprite, TypePill } from "../components/ui.jsx";
 import { CategoryBadge } from "../components/MoveBits.jsx";
 
@@ -44,6 +44,13 @@ export default function TeamPage({ shared }) {
     if (team.length >= TEAM_SIZE) return;
     setTeam(cur => [...cur.filter(Boolean), { id, moves: [] }]);
   };
+  // Complète les attaques manquantes de chaque membre
+  const fillAll = () => setTeam(cur => cur.map(s => {
+    if (!s || !BY_ID.get(s.id) || (s.moves || []).length >= 4) return s;
+    const p = BY_ID.get(s.id);
+    const have = (s.moves || []).map(id => movesData.moves[movesData.byId.get(id)]).filter(Boolean);
+    return { ...s, moves: [...(s.moves || []), ...autoMoves(p, learnable(p, movesData), have)] };
+  }));
   const link = `${location.origin}${location.pathname}#/equipe?t=${encodeTeam(team)}`;
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 2000); }
@@ -62,8 +69,13 @@ export default function TeamPage({ shared }) {
           <h1 className="text-balance text-[clamp(2rem,4.6vw,3.2rem)] font-light leading-none tracking-[-0.045em]">{t.teamTitle}</h1>
           <p className="mt-3 text-muted">{t.teamIntro}</p>
         </div>
-        {members.length > 0 && !isShared && (
-          <button type="button" className={`${btn} border border-line text-muted hover:text-fg`} onClick={() => setTeam([])}>{t.teamClear}</button>
+        {members.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {movesData && slots.some(s => s && (s.moves || []).length < 4) && (
+              <button type="button" className={`${btn} bg-accent-soft font-medium text-accent-ink hover:brightness-95`} onClick={fillAll}>✨ {t.autoMovesAll}</button>
+            )}
+            {!isShared && <button type="button" className={`${btn} border border-line text-muted hover:text-fg`} onClick={() => setTeam([])}>{t.teamClear}</button>}
+          </div>
         )}
       </div>
 
@@ -256,9 +268,16 @@ function Slot({ slot, index, movesData, onChange, onRemove, onReplace }) {
           </span>
         ))}
         {moves.length < 4 && (adding && movesData ? (
-          <MovePicker p={p} movesData={movesData} exclude={slot.moves || []} onPick={id => { onChange({ ...slot, moves: [...(slot.moves || []), id] }); setAdding(false); }} onClose={() => setAdding(false)} />
+          <MovePicker p={p} movesData={movesData} exclude={slot.moves || []} left={4 - moves.length}
+            onPick={id => { const next = [...(slot.moves || []), id]; onChange({ ...slot, moves: next }); if (next.length >= 4) setAdding(false); }} onClose={() => setAdding(false)} />
         ) : (
-          <button type="button" onClick={() => setAdding(true)} className="rounded-md px-1.5 py-1 text-left text-[0.76rem] text-faint hover:bg-sunk hover:text-fg">+ {t.addAttack}</button>
+          <div className="grid gap-1">
+            {movesData && (
+              <button type="button" onClick={() => onChange({ ...slot, moves: [...(slot.moves || []), ...autoMoves(p, learnable(p, movesData), moves)] })}
+                className="rounded-md bg-accent-soft px-1.5 py-1 text-left text-[0.76rem] font-medium text-accent-ink hover:brightness-95">✨ {t.autoMoves}</button>
+            )}
+            <button type="button" onClick={() => setAdding(true)} className="rounded-md px-1.5 py-1 text-left text-[0.76rem] text-faint hover:bg-sunk hover:text-fg">+ {moves.length ? t.moreMoves : t.addAttack}</button>
+          </div>
         ))}
       </div>
     </div>
@@ -299,8 +318,16 @@ function Picker({ exclude, onPick, onClose }) {
   );
 }
 
+// Capacités offensives que le Pokémon peut apprendre (STAB et puissance d'abord)
+function learnable(p, movesData) {
+  const seen = new Set();
+  return (movesData.learn[p.id] || []).map(([idx]) => movesData.moves[idx])
+    .filter(mv => mv.cat !== "N" && mv.power && !seen.has(mv.id) && seen.add(mv.id))
+    .sort((a, b) => (p.types.includes(b.type) - p.types.includes(a.type)) || b.power - a.power);
+}
+
 // Recherche d'une attaque parmi celles que le Pokémon peut apprendre (STAB et puissance d'abord)
-function MovePicker({ p, movesData, exclude, onPick, onClose }) {
+function MovePicker({ p, movesData, exclude, left, onPick, onClose }) {
   const { lang, t } = useLang();
   const [q, setQ] = useState("");
   const ref = useRef(null);
@@ -309,12 +336,7 @@ function MovePicker({ p, movesData, exclude, onPick, onClose }) {
     document.addEventListener("pointerdown", close);
     return () => document.removeEventListener("pointerdown", close);
   }, [onClose]);
-  const options = useMemo(() => {
-    const seen = new Set();
-    return (movesData.learn[p.id] || []).map(([idx]) => movesData.moves[idx])
-      .filter(mv => mv.cat !== "N" && mv.power && !seen.has(mv.id) && seen.add(mv.id))
-      .sort((a, b) => (p.types.includes(b.type) - p.types.includes(a.type)) || b.power - a.power);
-  }, [p, movesData]);
+  const options = useMemo(() => learnable(p, movesData), [p, movesData]);
   const query = norm(q.trim());
   const list = options.filter(mv => !exclude.includes(mv.id) && (!query || norm(mv.fr).includes(query) || norm(mv.en).includes(query))).slice(0, 6);
   return (
@@ -322,6 +344,10 @@ function MovePicker({ p, movesData, exclude, onPick, onClose }) {
       <input id={`move-pick-${p.id}`} autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder={t.movesSearch}
         onKeyDown={e => { if (e.key === "Enter" && list[0]) onPick(list[0].id); if (e.key === "Escape") onClose(); }}
         className="h-8 w-full rounded-md border border-line bg-sunk px-2 text-[0.8rem] focus:border-accent focus:outline-none" />
+      <div className="flex items-center justify-between px-1 text-[0.68rem] text-faint">
+        <span>{t.movesKeepOpen.replace("{n}", left)}</span>
+        <button type="button" onClick={onClose} className="text-accent-ink hover:underline">{t.done}</button>
+      </div>
       {list.map(mv => (
         <button key={mv.id} type="button" onClick={() => onPick(mv.id)} className="flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left text-[0.76rem] hover:bg-sunk">
           <i className="size-2 flex-none rounded-full" style={{ background: TYPES[mv.type].col }} />

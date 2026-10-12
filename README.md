@@ -3,11 +3,11 @@
 Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglais. Gratuit, sans pub, sans compte et open source.
 
 - Les 649 Pokémon des générations 1 à 5 avec les **stats, types et talents du client PokeMMO**, en vue **Fiche** (liste + fiche détaillée) ou **Cartes** (grille)
-- **Créateur d'équipe** : 6 cases, verdict en une phrase, suggestions de Pokémon cliquables pour combler les faiblesses, tableau des faiblesses, couverture offensive (types ou attaques choisies), partage par lien, bouton « Ajouter à l'équipe » sur chaque fiche
+- **Créateur d'équipe** : 6 cases, verdict en une phrase, suggestions de Pokémon cliquables pour combler les faiblesses, tableau des faiblesses, couverture offensive (types ou attaques choisies), **4 attaques conseillées en un clic** (STAB + couverture, selon Attaque / Att. Spé.), partage par lien, bouton « Ajouter à l'équipe » sur chaque fiche
 - **Hordes EV** : choisis la stat à monter, le site liste les spots de horde qui la donnent, les EV par horde et le nombre de hordes pour 252
 - **Lieux de capture** par région : méthode (herbes, surf, cannes…), rareté, hordes et niveaux, avec une page pour chaque lieu
 - **Cartes des régions** (schémas dessinés pour le site) : le lieu mis en avant et le chemin depuis le Centre Pokémon le plus proche
-- **Planificateur d'élevage** : tu saisis les Pokémon que tu as déjà (IV, nature, talent, genre) et le plan part de là. Étapes à faire dans l'ordre, bouton « Fait » qui met ta boîte à jour, nature et talent conseillés, liste des Pokémon à trouver, objets et coût estimé. **Partage par lien** : le plan et les Pokémon tiennent dans l'adresse, sans serveur
+- **Planificateur d'élevage** : tu saisis les Pokémon que tu as déjà et le plan part de là. Saisie rapide : un clic par IV à 31 (ou `31/31/x/31/31/31`), nature choisie avec ▲ / ▼, talents en boutons. Étapes à faire dans l'ordre, bouton « Fait » qui met ta boîte à jour, nature et talent conseillés, liste des Pokémon à trouver, objets et coût estimé. **Partage par lien** : le plan et les Pokémon tiennent dans l'adresse, sans serveur
 - **Tutoriels** : vidéos YouTube classées par thème (débuter, argent, revanches d'arène, Ho-Oh et Red, élevage), liste dans `src/data/tutorials.js`
 - **Capacités** : onglet sur chaque fiche (par niveau, CT/CS, tuteur, œuf, évolution, STAB signalé), page de chaque capacité avec tous les Pokémon qui l'apprennent, liste des 559 capacités avec filtre « CT / CS seulement ». Chargé à la demande (`src/data/moves.json`)
 - **Natures** : tableau des 25 natures (stat augmentée / baissée) et recherche

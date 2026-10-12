@@ -107,6 +107,7 @@ export default function Breeding({ p, shared }) {
   };
 
   const nodeCtx = { info, nature, lang, t };
+  const goal = { ivs: chosen, nature: natured ? nature : null };
 
   // ---------- Partage ----------
   const link = shareUrl(p.id, encodePlan({ species: p.id, target: target.id, ivs: chosen, natured, nature, box: myBox, name: shareName }));
@@ -224,7 +225,7 @@ export default function Breeding({ p, shared }) {
         </div>
         <p className="text-[0.84rem] text-muted">{isShared ? t.boxHintShared : t.boxHint}</p>
         {form && form.mode !== "done" && (
-          <PokemonForm key={form.item?.id || "new"} initial={form.item} allowed={allowed} title={form.mode === "edit" ? t.editPokemon : t.addPokemon} onSave={saveItem} onCancel={() => setForm(null)} />
+          <PokemonForm key={form.item?.id || "new"} initial={form.item} allowed={allowed} goal={goal} title={form.mode === "edit" ? t.editPokemon : t.addPokemon} onSave={saveItem} onCancel={() => setForm(null)} />
         )}
         {myBox.length > 0 ? (
           <ul className="grid gap-1.5">
@@ -300,7 +301,7 @@ export default function Breeding({ p, shared }) {
                       return (
                         <div key={n.id} className={`grid gap-2 rounded-xl p-2 ${isReady ? "bg-accent-soft/60" : ""}`}>
                           {form?.mode === "done" && form.nodeId === n.id ? (
-                            <PokemonForm initial={form.item} allowed={allowed} title={t.recordBaby} onSave={child => finishBreed(n, child)} onCancel={() => setForm(null)} />
+                            <PokemonForm initial={form.item} allowed={allowed} goal={goal} title={t.recordBaby} onSave={child => finishBreed(n, child)} onCancel={() => setForm(null)} />
                           ) : (
                             <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
                               <Node n={n.kids[0]} ctx={nodeCtx} /><span className="flex-none text-faint">×</span>

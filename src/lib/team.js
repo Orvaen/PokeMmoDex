@@ -70,3 +70,39 @@ export function decodeTeam(str) {
   }).filter(Boolean);
   return team.length ? team : null;
 }
+
+// Attaques à éviter dans une suggestion automatique (recharge, K.O. de soi, deux tours, conditions)
+const AUTO_SKIP = new Set(["Self-Destruct", "Explosion", "Hyper Beam", "Giga Impact", "Blast Burn", "Hydro Cannon", "Frenzy Plant", "Rock Wrecker", "Roar of Time",
+  "Focus Punch", "Last Resort", "Dream Eater", "Future Sight", "Doom Desire", "Sky Attack", "Skull Bash", "Solar Beam", "Razor Wind", "Dig", "Fly", "Bounce", "Dive",
+  "Shadow Force", "Synchronoise", "Belch", "Snore", "Spit Up", "Fake Out", "Feint", "Outrage", "Thrash", "Petal Dance", "Selfdestruct", "Rollout", "Ice Ball", "Uproar", "Foul Play"]);
+
+/**
+ * Propose jusqu'à 4 attaques : la meilleure STAB de chaque type, puis la couverture
+ * qui touche le plus de types en super efficace. Tient compte de l'Attaque / Att. Spé.
+ */
+export function autoMoves(p, options, keep = []) {
+  const { atk, spa } = p.stats;
+  const catF = mv => (atk > spa * 1.15 ? (mv.cat === "P" ? 1 : 0.6) : spa > atk * 1.15 ? (mv.cat === "S" ? 1 : 0.6) : 1);
+  const score = mv => Math.min(mv.power, 120) * ((mv.acc ?? 100) / 100) * (p.types.includes(mv.type) ? 1.5 : 1) * catF(mv);
+  const pool = options.filter(mv => mv.power > 1 && !AUTO_SKIP.has(mv.en)).sort((a, b) => score(b) - score(a));
+  const chosen = [...keep];
+  const has = mv => chosen.some(c => c.id === mv.id || c.type === mv.type);
+  for (const ty of p.types) {
+    const best = pool.find(mv => mv.type === ty && !has(mv));
+    if (best && chosen.length < 4) chosen.push(best);
+  }
+  const hits = () => new Set(TYPE_KEYS.filter(def => chosen.some(c => mult(c.type, def) > 1)));
+  while (chosen.length < 4) {
+    const covered = hits();
+    let best = null, bestVal = -1;
+    for (const mv of pool) {
+      if (has(mv)) continue;
+      const gain = TYPE_KEYS.filter(def => !covered.has(def) && mult(mv.type, def) > 1).length;
+      const val = score(mv) * (1 + 0.35 * gain);
+      if (val > bestVal) { bestVal = val; best = mv; }
+    }
+    if (!best) break;
+    chosen.push(best);
+  }
+  return chosen.slice(keep.length).map(mv => mv.id);
+}

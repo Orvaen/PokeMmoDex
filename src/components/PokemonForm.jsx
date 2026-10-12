@@ -1,17 +1,25 @@
 import { useMemo, useState } from "react";
 import { ALL, BY_ID, STATS, STAT_COL, genderInfo, pad } from "../lib/data.js";
-import { NATURES, abilName, natFx, natName } from "../lib/breeding.js";
+import { NATURES, abilName, natFx, natName, natureFor } from "../lib/breeding.js";
 import { nameOf, useLang } from "../lib/i18n.js";
-import { Dropdown, Sprite } from "./ui.jsx";
+import { Sprite } from "./ui.jsx";
 
 const DITTO = 132;
+const NAT_STATS = ["atk", "def", "spa", "spd", "spe"];
+
+const Chip = ({ on, onClick, children }) => (
+  <button type="button" aria-pressed={on} onClick={onClick}
+    className={`h-8 rounded-full border px-3 text-[0.82rem] transition-colors ${on ? "border-transparent bg-accent-soft font-medium text-accent-ink" : "border-line text-muted hover:bg-sunk hover:text-fg"}`}>
+    {children}
+  </button>
+);
 const fieldCls = "h-10 w-full rounded-[10px] border border-line bg-panel px-3 text-[0.9rem] focus:border-accent focus:outline-none";
 
 /**
  * Formulaire d'un Pokémon de la boîte.
  * allowed : espèces proposées (compatibles avec l'élevage en cours)
  */
-export default function PokemonForm({ initial, allowed, title, onSave, onCancel }) {
+export default function PokemonForm({ initial, allowed, goal, title, onSave, onCancel }) {
   const { lang, t } = useLang();
   const [species, setSpecies] = useState(initial?.species ?? null);
   const [query, setQuery] = useState("");
@@ -20,6 +28,27 @@ export default function PokemonForm({ initial, allowed, title, onSave, onCancel 
   const [nature, setNature] = useState(initial?.nature ?? "");
   const [ability, setAbility] = useState(initial?.ability ?? "");
   const [error, setError] = useState("");
+  const [exact, setExact] = useState(() => STATS.some(s => initial?.ivs?.[s] != null && initial.ivs[s] !== 31));
+  const [paste, setPaste] = useState("");
+  const [part, setPart] = useState(() => ({ plus: NATURES[initial?.nature]?.[0] || null, minus: NATURES[initial?.nature]?.[1] || null }));
+
+  const pickNature = k => { setNature(k); setPart({ plus: NATURES[k]?.[0] || null, minus: NATURES[k]?.[1] || null }); };
+  const pickSide = (side, st) => {
+    const next = { ...part, [side]: part[side] === st ? null : st };
+    const other = side === "plus" ? "minus" : "plus";
+    if (next[other] === st) next[other] = null;
+    setPart(next);
+    setNature(next.plus && next.minus ? natureFor(next.plus, next.minus) : "");
+  };
+  const setAll = list => setIvs(cur => Object.fromEntries(STATS.map(s => [s, list.includes(s) ? 31 : (+cur[s] === 31 ? "" : cur[s])])));
+  // « 31/31/x/31/31/31 » : 6 valeurs dans l'ordre PV Atq Déf A.Spé D.Spé Vit
+  const onPaste = str => {
+    setPaste(str);
+    const parts = str.split(/[\s/,;.-]+/).filter(Boolean);
+    if (parts.length !== 6) return;
+    setIvs(Object.fromEntries(STATS.map((s, i) => { const n = parseInt(parts[i], 10); return [s, Number.isNaN(n) ? "" : Math.max(0, Math.min(31, n))]; })));
+    if (parts.some(x => /^\d+$/.test(x) && +x !== 31)) setExact(true);
+  };
 
   const p = species ? BY_ID.get(species) : null;
   const g = p ? (p.id === DITTO ? { kind: "N" } : genderInfo(p)) : null;
@@ -77,71 +106,96 @@ export default function PokemonForm({ initial, allowed, title, onSave, onCancel 
         )}
       </div>
 
-      <div className="flex flex-wrap items-end gap-4">
-        {/* Genre */}
+      {/* Genre + talent : boutons directs */}
+      <div className="flex flex-wrap items-start gap-x-5 gap-y-3">
         <div className="grid gap-1.5">
           <span className="eyebrow">{t.formGender}</span>
           {fixedGender ? (
-            <span className="inline-flex h-10 items-center rounded-[10px] bg-sunk px-3 text-[0.9rem] text-muted">{fixedGender === "N" ? t.genderless : fixedGender === "M" ? "♂" : "♀"}</span>
+            <span className="inline-flex h-9 items-center rounded-[10px] bg-sunk px-3 text-[0.9rem] text-muted">{fixedGender === "N" ? t.genderless : fixedGender === "M" ? "♂" : "♀"}</span>
           ) : (
             <div className="inline-flex gap-1 rounded-[11px] bg-sunk p-1">
               {[["M", "♂"], ["F", "♀"]].map(([v, l]) => (
-                <button key={v} type="button" aria-pressed={gender === v} onClick={() => setGender(v)} className={`h-8 w-11 rounded-lg text-[1rem] ${gender === v ? "bg-panel font-semibold text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted"}`}>{l}</button>
+                <button key={v} type="button" aria-pressed={gender === v} onClick={() => setGender(v)} className={`h-7 w-11 rounded-lg text-[1rem] ${gender === v ? "bg-panel font-semibold text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted"}`}>{l}</button>
               ))}
             </div>
           )}
         </div>
-        {/* Nature */}
-        <div className="grid gap-1.5">
-          <span className="eyebrow">{t.nature}</span>
-          <Dropdown
-            size="lg"
-            label={t.formAnyNature}
-            active={!!nature}
-            value={nature}
-            onChange={setNature}
-            options={[{ value: "", label: t.formAnyNature }, { sep: true }, ...Object.keys(NATURES).map(k => ({ value: k, label: natName(k, lang), tag: natFx(k, t) }))]}
-          />
-        </div>
-        {/* Talent */}
         {abilities.length > 0 && (
-          <div className="grid gap-1.5">
+          <div className="grid min-w-0 gap-1.5">
             <span className="eyebrow">{t.formAbility}</span>
-            <Dropdown
-              size="lg"
-              label={t.formAnyAbility}
-              active={!!ability}
-              value={ability}
-              onChange={setAbility}
-              options={[{ value: "", label: t.formAnyAbility }, { sep: true }, ...abilities.map(a => ({ value: a, label: abilName(a, lang), tag: p.abilities[2] === a ? t.hiddenShort : undefined }))]}
-            />
+            <div className="flex flex-wrap gap-1.5">
+              {[["", t.formAnyAbility], ...abilities.map(a => [a, abilName(a, lang) + (p.abilities[2] === a ? ` · ${t.hiddenShort}` : "")])].map(([v, l]) => (
+                <Chip key={v || "any"} on={ability === v} onClick={() => setAbility(v)}>{l}</Chip>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* IV */}
+      {/* Nature : une stat qui monte, une qui baisse */}
       <div className="grid gap-1.5">
-        <span className="eyebrow">{t.formIvs}</span>
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <span className="eyebrow">{t.nature}</span>
+          <span className="text-[0.86rem] font-medium">{nature ? `${natName(nature, lang)} · ${natFx(nature, t)}` : t.formAnyNature}</span>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <Chip on={!nature} onClick={() => pickNature("")}>{t.formAnyNature}</Chip>
+          {goal?.nature && <Chip on={nature === goal.nature} onClick={() => pickNature(goal.nature)}>★ {t.natPlan} : {natName(goal.nature, lang)}</Chip>}
+          <Chip on={!!nature && !NATURES[nature][0]} onClick={() => pickNature("Serious")}>{t.natNeutral}</Chip>
+        </div>
+        <div className="grid gap-1 rounded-xl bg-sunk p-2">
+          {[["plus", "▲", t.natPlus], ["minus", "▼", t.natMinus]].map(([side, arrow, label]) => (
+            <div key={side} className="flex flex-wrap items-center gap-1">
+              <span className={`w-[88px] whitespace-nowrap text-[0.76rem] ${side === "plus" ? "text-[oklch(0.58_0.15_150)]" : "text-[oklch(0.6_0.17_25)]"}`}>{arrow} {label}</span>
+              {NAT_STATS.map(st => {
+                const on = part[side] === st;
+                return (
+                  <button key={st} type="button" aria-pressed={on} onClick={() => pickSide(side, st)}
+                    className={`h-7 min-w-[48px] rounded-lg px-2 text-[0.78rem] ${on ? (side === "plus" ? "bg-[oklch(0.6_0.15_150)] text-white" : "bg-[oklch(0.6_0.17_25)] text-white") : "bg-panel text-muted hover:text-fg"}`}>
+                    {t.short[st]}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+          {(part.plus || part.minus) && !nature && <p className="text-[0.74rem] text-faint">{t.natPick}</p>}
+        </div>
+      </div>
+
+      {/* IV : un clic = 31 */}
+      <div className="grid gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="eyebrow mr-1">{t.formIvs}</span>
+          <Chip on={STATS.every(s => +ivs[s] === 31)} onClick={() => setAll(STATS)}>{t.ivAll31}</Chip>
+          {goal?.ivs?.length > 0 && goal.ivs.length < 6 && <Chip on={STATS.every(s => (+ivs[s] === 31) === goal.ivs.includes(s))} onClick={() => setAll(goal.ivs)}>★ {t.ivGoal}</Chip>}
+          <Chip on={false} onClick={() => setAll([])}>{t.ivNone}</Chip>
+        </div>
         <div className="grid grid-cols-6 gap-1.5 max-[520px]:grid-cols-3">
           {STATS.map(s => {
-            const is31 = +ivs[s] === 31;
-            return (
+            const v = ivs[s];
+            const is31 = +v === 31;
+            return exact ? (
               <label key={s} className={`grid gap-1 rounded-[11px] border p-1.5 text-center ${is31 ? "iv-chip border-transparent" : "border-line"}`} style={{ "--s": STAT_COL[s] }}>
                 <span className="text-[0.74rem] font-medium">{t.short[s]}</span>
-                <input
-                  id={"iv-" + s}
-                  inputMode="numeric"
-                  value={ivs[s]}
-                  placeholder="?"
-                  onChange={e => setIv(s, e.target.value)}
-                  className="h-8 w-full rounded-lg border border-line bg-panel text-center font-mono text-[0.95rem] focus:border-accent focus:outline-none"
-                />
-                <button type="button" onClick={() => setIv(s, is31 ? "" : 31)} className="text-[0.7rem] text-muted hover:text-fg">{is31 ? t.formClear : "31"}</button>
+                <input id={"iv-" + s} inputMode="numeric" value={v} placeholder="?" onChange={e => setIv(s, e.target.value)} onFocus={e => e.target.select()}
+                  className="h-8 w-full rounded-lg border border-line bg-panel text-center font-mono text-[0.95rem] focus:border-accent focus:outline-none" />
               </label>
+            ) : (
+              <button key={s} id={"iv-" + s} type="button" aria-pressed={is31} onClick={() => setIv(s, is31 ? "" : 31)} style={{ "--s": STAT_COL[s] }}
+                className={`grid gap-0.5 rounded-[11px] border py-2 text-center transition-colors ${is31 ? "iv-chip border-transparent" : "border-line hover:bg-sunk"}`}>
+                <span className="text-[0.74rem] font-medium">{t.short[s]}</span>
+                <span className={`font-mono text-[1.05rem] ${v === "" ? "text-faint" : ""}`}>{v === "" ? "–" : v}</span>
+              </button>
             );
           })}
         </div>
-        <p className="text-[0.78rem] text-faint">{t.formIvHint}</p>
+        <div className="flex flex-wrap items-center gap-2 text-[0.78rem] text-faint">
+          <span>{t.formIvHint}</span>
+          <button type="button" onClick={() => setExact(x => !x)} className="text-accent-ink underline underline-offset-4">{exact ? t.done : t.ivExact}</button>
+          <span>{t.ivPaste}</span>
+          <input aria-label={t.ivExact} placeholder={t.ivPastePh} value={paste} onChange={e => onPaste(e.target.value)}
+            className="h-7 w-[150px] rounded-md border border-line bg-panel px-2 font-mono text-[0.78rem] text-fg focus:border-accent focus:outline-none" />
+        </div>
       </div>
 
       {error && <p className="text-[0.86rem] text-[oklch(0.6_0.18_25)]">{error}</p>}
