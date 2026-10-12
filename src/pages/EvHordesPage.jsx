@@ -97,15 +97,25 @@ export default function EvHordesPage() {
         const good = species.filter(x => x.p.yields[stat]);
         if (!good.length) return null;
         const yields = good.map(x => x.p.yields[stat]);
-        return { ...s, species, good, share: good.length / species.length, best: Math.max(...yields), worst: Math.min(...yields), minLv: Math.min(...good.map(x => x.min)) };
+        const changed = species.length !== s.species.length;
+        return { ...s, species, good, changed, share: good.length / species.length, best: Math.max(...yields), worst: Math.min(...yields), minLv: Math.min(...good.map(x => x.min)) };
       })
       .filter(Boolean)
       .filter(c => !onlyPure || c.share === 1)
       .filter(c => !leppa || (leppa === "no" ? c.center && c.center.advice !== "leppa" : c.center?.advice === "leppa"))
       .filter(c => !noHm || c.hms.every(h => h.opt))
-      .sort((a, b) => (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
+      .sort((a, b) => ((season || time) ? b.changed - a.changed : 0) || (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
         || b.share - a.share || b.best - a.best || a.minLv - b.minLv);
   }, [stat, region, onlyPure, leppa, noHm, sort, season, time]);
+  // Ce que la saison / le moment change pour cette stat (spots modifiés ou absents)
+  const condInfo = useMemo(() => {
+    if (!season && !time) return null;
+    const base = SPOTS.filter(s => (region === "" || s.region === +region) && s.species.some(x => x.p.yields[stat]));
+    const shown = new Set(cards.map(c => c.key));
+    const gone = base.filter(s => !shown.has(s.key) && !s.species.some(x => x.p.yields[stat] && x.conds.some(c => fits(c, time, season))));
+    return { changed: cards.filter(c => c.changed).length, gone: gone.length };
+  }, [cards, season, time, stat, region]);
+  const condText = [season !== "" && t.seasons[+season], time && t.timesOfDay[time]].filter(Boolean).join(" · ");
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-7 px-8 pb-16 pt-[22px] max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -194,9 +204,16 @@ export default function EvHordesPage() {
         </div>
       </div>
 
+      {condInfo && (
+        <p className="-mt-3 flex flex-wrap items-center gap-x-2 rounded-xl bg-accent-soft px-4 py-2.5 text-[0.86rem] text-accent-ink">
+          <b className="font-medium">◷ {condText}</b>
+          <span>{condInfo.changed || condInfo.gone ? t.condChanges(condInfo.changed, condInfo.gone) : t.condNoChange}</span>
+        </p>
+      )}
+
       {cards.length ? (
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
-          {cards.map(c => <SpotCard key={c.key} c={c} stat={stat} />)}
+          {cards.map(c => <SpotCard key={c.key} c={c} stat={stat} condText={condText} />)}
         </ul>
       ) : (
         <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{t.evNone}</p>
@@ -211,7 +228,7 @@ export default function EvHordesPage() {
   );
 }
 
-function SpotCard({ c, stat }) {
+function SpotCard({ c, stat, condText }) {
   const { lang, t } = useLang();
   const loc = LOCATIONS[c.loc];
   const pure = c.share === 1;
@@ -223,6 +240,7 @@ function SpotCard({ c, stat }) {
         <header className="flex items-start justify-between gap-3">
           <a href={href({ page: "location", key: c.loc })} className="group min-w-0">
             <h2 className="text-balance text-[1.02rem] font-medium leading-snug group-hover:text-accent-ink">{baseName(locName(loc, lang))}</h2>
+            {c.changed && <p className="mb-0.5 text-[0.72rem] font-medium text-accent-ink">◷ {t.condCardChanged(condText)}</p>}
             <p className="text-[0.78rem] text-muted">{t.regions[loc.region]} · {t.methods[METHODS[c.method]] || METHODS[c.method]}</p>
           </a>
           <span className={`flex-none rounded-full px-2.5 py-1 text-[0.72rem] font-medium ${pure ? "bg-accent text-panel" : "bg-sunk text-muted"}`}>
