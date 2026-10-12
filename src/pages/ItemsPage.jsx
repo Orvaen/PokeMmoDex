@@ -4,14 +4,18 @@ import { typeName, useLang } from "../lib/i18n.js";
 import { Icon, TypePill } from "../components/ui.jsx";
 import Holders from "../components/Holders.jsx";
 import DATA from "../data/items.json";
+import { HELD, HELD_CATS } from "../data/heldItems.js";
+
+const HELD_LIST = DATA.held.map(i => ({ ...i, cat: HELD[i.en].cat, src: HELD[i.en].src, fx: { fr: HELD[i.en].fr, en: HELD[i.en].en } }));
 
 const KINDS = ["item", "plate", "incense", "gem"];
 // Noms des images PokeAPI quand ils diffèrent du nom du jeu
-const SLUG = { Silverpowder: "silver-powder", SilverPowder: "silver-powder", Blackglasses: "black-glasses", BlackGlasses: "black-glasses", Nevermeltice: "never-melt-ice", NeverMeltIce: "never-melt-ice", Twistedspoon: "twisted-spoon", TwistedSpoon: "twisted-spoon" };
+const SLUG = { BrightPowder: "bright-powder", DeepSeaTooth: "deep-sea-tooth", DeepSeaScale: "deep-sea-scale", "King's Rock": "kings-rock", "Exp. Share": "exp-share", Stick: "leek", Silverpowder: "silver-powder", SilverPowder: "silver-powder", Blackglasses: "black-glasses", BlackGlasses: "black-glasses", Nevermeltice: "never-melt-ice", NeverMeltIce: "never-melt-ice", Twistedspoon: "twisted-spoon", TwistedSpoon: "twisted-spoon" };
 const slug = en => SLUG[en] || en.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 export default function ItemsPage() {
   const { lang, t } = useLang();
+  const [section, setSection] = useState("type");
   const [type, setType] = useState("");
   const [kind, setKind] = useState("");
   const [q, setQ] = useState("");
@@ -27,6 +31,7 @@ export default function ItemsPage() {
     for (const i of list) { if (!by.has(i.type)) by.set(i.type, []); by.get(i.type).push(i); }
     return [...by.entries()];
   }, [type, kind, query]);
+  const heldShown = useMemo(() => HELD_LIST.filter(i => (section === "all" || i.cat === section) && (!query || norm(i.fr).includes(query) || norm(i.en).includes(query) || norm(i.fx[lang] || "").includes(query))), [section, query, lang]);
   const chip = on => `h-8 rounded-full border px-3 text-[0.82rem] ${on ? "border-transparent bg-accent-soft font-medium text-accent-ink" : "border-line text-muted hover:text-fg"}`;
 
   return (
@@ -40,6 +45,16 @@ export default function ItemsPage() {
         <p className="mt-3 text-muted">{t.itemsIntro}</p>
       </div>
 
+      <div className="flex flex-wrap gap-1.5 border-b border-line pb-3" role="tablist" aria-label={t.itemsSections}>
+        {["type", ...HELD_CATS, "all"].map(c => (
+          <button key={c} type="button" role="tab" aria-selected={section === c} onClick={() => setSection(c)}
+            className={`h-9 rounded-[10px] px-3 text-[0.86rem] transition-colors ${section === c ? "bg-fg font-medium text-bg" : "text-muted hover:bg-sunk hover:text-fg"}`}>
+            {t.heldCats[c]}
+          </button>
+        ))}
+      </div>
+
+      {section === "type" ? (<>
       <div className="grid gap-3">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label={t.type}>
           <button type="button" aria-pressed={!type} onClick={() => setType("")} className={chip(!type)}>{t.allTypes}</button>
@@ -70,9 +85,22 @@ export default function ItemsPage() {
           </ul>
         </section>
       )) : <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{t.itemsNone}</p>}
+      </>) : (<>
+        <label className="relative w-full max-w-[300px]">
+          <span className="sr-only">{t.itemsSearch}</span>
+          <span className="absolute left-[13px] top-1/2 -translate-y-1/2 text-faint">{Icon.search}</span>
+          <input id="held-search" value={q} onChange={e => setQ(e.target.value)} placeholder={t.itemsSearchHeld}
+            className="h-9 w-full rounded-[10px] border border-line bg-panel pl-[38px] pr-3 text-[0.88rem] focus:border-accent focus:outline-none" />
+        </label>
+        {heldShown.length ? (
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+            {heldShown.map(i => <HeldCard key={i.en} i={i} showCat={section === "all"} />)}
+          </ul>
+        ) : <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{t.itemsNone}</p>}
+      </>)}
 
       <div className="grid max-w-[70ch] gap-2 border-t border-line pt-4 text-[0.82rem] text-faint">
-        <p>{t.itemsNote}</p>
+        {section === "type" ? <p>{t.itemsNote}</p> : <p>{t.heldNote}</p>}
         <p>{t.itemsSource}</p>
       </div>
     </div>
@@ -100,6 +128,33 @@ function ItemCard({ i }) {
         {i.consumed && <p className="rounded-lg bg-sunk px-2.5 py-1.5 text-[0.78rem] text-muted">{t.itemConsumed}</p>}
         <p className="text-[0.86rem] leading-relaxed text-muted">{(lang === "fr" && i.desc.fr) || i.desc.en}</p>
         <Holders ids={i.holders} />
+      </article>
+    </li>
+  );
+}
+
+function HeldCard({ i, showCat }) {
+  const { lang, t } = useLang();
+  const [ok, setOk] = useState(true);
+  return (
+    <li>
+      <article className="grid h-full content-start gap-3 rounded-2xl border border-line bg-panel p-4">
+        <header className="flex items-start gap-3">
+          <span className="grid size-12 flex-none place-items-center rounded-xl bg-sunk">
+            {ok ? <img src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${slug(i.en)}.png`} alt="" loading="lazy" decoding="async" className="pixel size-9 object-contain" onError={() => setOk(false)} />
+              : <span className="size-5 rounded-full bg-line" />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[1.02rem] font-medium leading-snug">{lang === "fr" ? i.fr : i.en}</h3>
+            <p className="text-[0.76rem] text-faint">{lang === "fr" ? i.en : i.fr}{showCat ? ` · ${t.heldCats[i.cat]}` : ""}</p>
+          </div>
+        </header>
+        <div className="grid gap-1 rounded-xl bg-accent-soft px-3 py-2">
+          <p className="text-[0.92rem] font-medium leading-snug text-accent-ink">{i.fx[lang] || i.fx.fr}</p>
+          <p className="text-[0.7rem] text-accent-ink/70">{i.src === "game" ? t.heldSrcGame : t.heldSrcGen5}</p>
+        </div>
+        <p className="text-[0.84rem] leading-relaxed text-muted">{(lang === "fr" && i.desc.fr) || i.desc.en}</p>
+        {i.holders.length > 0 && <Holders ids={i.holders} />}
       </article>
     </li>
   );

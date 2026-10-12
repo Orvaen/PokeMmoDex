@@ -4,6 +4,7 @@
 // Usage : node scripts/build-items.mjs <pokemmo-data>
 import fs from "node:fs";
 import path from "node:path";
+import { HELD } from "../src/data/heldItems.js";
 
 const [toolsDir] = process.argv.slice(2);
 if (!toolsDir) { console.error("Usage : node scripts/build-items.mjs <pokemmo-data>"); process.exit(1); }
@@ -55,5 +56,15 @@ for (const [k, list] of byName) {
 const KIND = ["item", "plate", "incense", "gem"];
 out.sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type) || KIND.indexOf(a.kind) - KIND.indexOf(b.kind) || a.en.localeCompare(b.en));
 const dest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/items.json");
-fs.writeFileSync(dest, JSON.stringify({ typeBoost: out }));
-console.log(`${out.length} objets de type → ${dest} (${(fs.statSync(dest).size / 1024).toFixed(0)} Ko)`);
+// Autres objets à tenir (liste et effets chiffrés dans src/data/heldItems.js)
+const held = [];
+for (const en of Object.keys(HELD)) {
+  const list = byName.get(en.toLowerCase());
+  if (!list) { console.warn("Objet introuvable :", en); continue; }
+  const sorted = best(list);
+  const descEn = clean(sorted.find(i => i.description)?.description);
+  const descFr = clean(sorted.map(i => frDesc[(i.description || "").toLowerCase()]).find(Boolean));
+  held.push({ en, fr: frNames[en.toLowerCase()] || en, desc: { en: descEn, fr: descFr || null }, holders: holdersOf(en.toLowerCase()) });
+}
+fs.writeFileSync(dest, JSON.stringify({ typeBoost: out, held }));
+console.log(`${held.length} objets à tenir, ${out.length} objets de type → ${dest} (${(fs.statSync(dest).size / 1024).toFixed(0)} Ko)`);
