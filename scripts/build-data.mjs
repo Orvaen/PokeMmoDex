@@ -113,6 +113,57 @@ for (const def of TYPES) {
   typeChart[def] = Object.fromEntries(TYPES.map(atk => [atk, row[atk] || 0]));
 }
 
+// ---------- Capacités (fichier séparé, chargé à la demande) ----------
+// Stats des capacités : client PokeMMO. Noms et descriptions FR : PokeMMO-Data (même identifiants).
+const clientMoves = readJSON(path.join(toolsDir, "data/moves.json"));
+const moveTrans = Object.fromEntries(Object.values(readJSON(path.join(zoneDir, "data/moves-data.json"))).map(m => [m.id, m]));
+const MOVE_OVERRIDE = { 258: "Snowscape" }; // remplace Grêle dans PokeMMO : pas de traduction fiable
+const tmItems = new Set(Object.keys(frItems).filter(k => k.startsWith("tm - ")).map(k => k.slice(5)));
+const hmItems = new Set(Object.keys(frItems).filter(k => k.startsWith("hm - ")).map(k => k.slice(5)));
+const CAT = { PHYSICAL: "P", SPECIAL: "S", STATUS: "N" };
+const moveIndex = new Map();
+const moves = clientMoves.map((m, i) => {
+  moveIndex.set(m.id, i);
+  const tr = MOVE_OVERRIDE[m.id] ? null : moveTrans[m.id];
+  const clean = x => (x || "").replace(/\s+/g, " ").trim();
+  const effectEn = clean(tr?.effect).replace(/\$effect_chance/g, tr?.effect_chance ?? "");
+  const key = m.name.toLowerCase();
+  const enName = tr?.name_translations?.en?.name || m.name;
+  return {
+    id: m.id,
+    en: enName,
+    fr: tr?.name_translations?.fr?.name || enName,
+    type: TYPE(m.type),
+    cat: CAT[m.skill_damage_type] || "N",
+    power: m.base_power || null,
+    acc: m.base_accuracy > 100 || !m.base_accuracy ? null : m.base_accuracy,
+    pp: m.base_pp,
+    prio: m.priority,
+    tm: hmItems.has(key) || hmItems.has(enName.toLowerCase()) ? "hm" : tmItems.has(key) || tmItems.has(enName.toLowerCase()) ? "tm" : null,
+    desc: { fr: clean(tr?.effect_translations?.fr?.effect), en: effectEn },
+  };
+});
+// Modes d'apprentissage : L niveau, T CT/CS, U tuteur, E œuf, V évolution, P pré-évolution, S spécial
+const KIND = { level: "L", move_learner_tools: "T", move_tutor: "U", egg_moves: "E", special_egg: "E", on_evolution: "V", prevo_moves: "P", special_moves: "S" };
+const learn = {};
+for (const m of monsters) {
+  const seen = new Set();
+  const rows = [];
+  for (const mv of m.moves) {
+    const idx = moveIndex.get(mv.id);
+    const kind = KIND[mv.type];
+    if (idx == null || !kind) continue;
+    const sig = `${idx}|${kind}|${mv.level || 0}`;
+    if (seen.has(sig)) continue;
+    seen.add(sig);
+    rows.push(kind === "L" ? [idx, kind, mv.level || 1] : [idx, kind]);
+  }
+  learn[m.id] = rows;
+}
+const movesDest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/moves.json");
+fs.writeFileSync(movesDest, JSON.stringify({ moves, learn }));
+console.log(`${moves.length} capacités (${moves.filter(m => m.tm === "tm").length} CT, ${moves.filter(m => m.tm === "hm").length} CS) → ${movesDest} (${(fs.statSync(movesDest).size / 1024).toFixed(0)} Ko)`);
+
 const out = { pokemon, locations, methods: METHODS, rarities: RARITIES, regions: REGIONS, abilities, abilityRatings, typeChart, generated: new Date().toISOString().slice(0, 10) };
 const dest = path.join(path.dirname(new URL(import.meta.url).pathname), "../src/data/dex.json");
 fs.mkdirSync(path.dirname(dest), { recursive: true });

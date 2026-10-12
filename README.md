@@ -8,6 +8,7 @@ Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglai
 - **Cartes des régions** (schémas dessinés pour le site) : le lieu mis en avant et le chemin depuis le Centre Pokémon le plus proche
 - **Planificateur d'élevage** : tu saisis les Pokémon que tu as déjà (IV, nature, talent, genre) et le plan part de là. Étapes à faire dans l'ordre, bouton « Fait » qui met ta boîte à jour, nature et talent conseillés, liste des Pokémon à trouver, objets et coût estimé. **Partage par lien** : le plan et les Pokémon tiennent dans l'adresse, sans serveur
 - **Tutoriels** : vidéos YouTube classées par thème (débuter, argent, revanches d'arène, Ho-Oh et Red, élevage), liste dans `src/data/tutorials.js`
+- **Capacités** : onglet sur chaque fiche (par niveau, CT/CS, tuteur, œuf, évolution, STAB signalé), page de chaque capacité avec tous les Pokémon qui l'apprennent, liste des 559 capacités avec filtre « CT / CS seulement ». Chargé à la demande (`src/data/moves.json`)
 - **Natures** : tableau des 25 natures (stat augmentée / baissée) et recherche
 - **Talents** : description au survol (texte officiel français + détail), noms français officiels
 - Faiblesses (table des types Gen 5, sans Fée), évolutions, tiers PvP, EV donnés
@@ -52,7 +53,7 @@ Les sprites Noir & Blanc viennent de Pokémon Showdown.
 src/
   lib/        données, élevage (arbre, conseils), traductions, routeur, stockage local
   components/ barre latérale, menus déroulants, sprites
-  pages/      fiche, cartes, lieux, page d'un lieu, élevage, hordes EV, tutoriels, pages légales
+  pages/      fiche, cartes, capacités, lieux, page d'un lieu, élevage, hordes EV, tutoriels, pages légales
 src/data/maps.js  schémas des 5 régions (lieux, coordonnées, liaisons)
 scripts/      génération des données
 ```

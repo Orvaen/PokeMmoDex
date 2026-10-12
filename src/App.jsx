@@ -11,6 +11,8 @@ import TutorialsPage from "./pages/TutorialsPage.jsx";
 import EvHordesPage from "./pages/EvHordesPage.jsx";
 import CardsPage from "./pages/CardsPage.jsx";
 import NaturesPage from "./pages/NaturesPage.jsx";
+import MovesListPage from "./pages/MovesListPage.jsx";
+import MovePage from "./pages/MovePage.jsx";
 
 const DEFAULT_ID = 6;
 
@@ -76,6 +78,8 @@ export default function App() {
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
   else if (route.page === "natures") main = <NaturesPage />;
+  else if (route.page === "moves") main = <MovesListPage />;
+  else if (route.page === "move") main = <MovePage id={route.id} />;
   else main = <NotFound />;
 
   // Remonte en haut à chaque changement de page

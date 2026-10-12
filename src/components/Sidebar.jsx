@@ -172,6 +172,17 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           <span className="text-[0.74rem] text-faint">{t.evSub}</span>
         </a>
         <a
+          href="#/capacites"
+          aria-current={route?.page === "moves" || route?.page === "move" ? "page" : undefined}
+          className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "moves" || route?.page === "move" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}
+        >
+          <span className="grid size-7 place-items-center rounded-lg bg-[oklch(0.6_0.14_255)] text-white">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></svg>
+          </span>
+          <span className="flex-1">{t.movesNav}</span>
+          <span className="text-[0.74rem] text-faint">{t.movesSub}</span>
+        </a>
+        <a
           href="#/natures"
           aria-current={route?.page === "natures" ? "page" : undefined}
           className={`flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-[0.92rem] ${route?.page === "natures" ? "bg-accent-soft font-medium text-accent-ink" : "hover:bg-sunk"}`}

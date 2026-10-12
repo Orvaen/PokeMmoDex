@@ -7,6 +7,7 @@ import { Icon, Section, Sprite, TypePill } from "../components/ui.jsx";
 import LocationsTab from "./LocationsTab.jsx";
 import Breeding from "./Breeding.jsx";
 import AbilityTag from "../components/AbilityTag.jsx";
+import MovesTab from "./MovesTab.jsx";
 
 export default function PokemonPage({ p, tab, plan, prev, next }) {
   const { lang, t } = useLang();
@@ -24,10 +25,11 @@ export default function PokemonPage({ p, tab, plan, prev, next }) {
 
   const tabs = [
     { id: "fiche", label: t.tabDex },
+    { id: "capacites", label: t.tabMoves, icon: Icon.bolt },
     { id: "lieux", label: t.tabLocations, icon: Icon.pin },
     { id: "elevage", label: t.tabBreed, icon: Icon.egg },
   ];
-  const title = `${nameOf(p, lang)} · ${tab === "elevage" ? t.tabBreed : tab === "lieux" ? t.tabLocations : "Pokédex"} · PokeMMO Dex`;
+  const title = `${nameOf(p, lang)} · ${tab === "elevage" ? t.tabBreed : tab === "lieux" ? t.tabLocations : tab === "capacites" ? t.tabMoves : "Pokédex"} · PokeMMO Dex`;
 
   return (
     <div className="mx-auto grid max-w-[980px] grid-cols-[minmax(0,1fr)] gap-[34px] px-8 pb-14 pt-[22px] max-[860px]:gap-7 max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -38,16 +40,16 @@ export default function PokemonPage({ p, tab, plan, prev, next }) {
         <a href="#/" className="hidden h-[34px] items-center gap-1.5 rounded-[10px] border border-line bg-panel px-3 text-[0.82rem] text-muted hover:text-fg max-[860px]:inline-flex">
           {Icon.left}{t.back}
         </a>
-        <div role="tablist" className="inline-flex gap-0.5 rounded-[11px] bg-sunk p-[3px]">
+        <div role="tablist" className="inline-flex min-w-0 gap-0.5 overflow-x-auto rounded-[11px] bg-sunk p-[3px] [scrollbar-width:none]">
           {tabs.map(x => (
             <a
               key={x.id}
               role="tab"
               aria-selected={tab === x.id}
               href={href({ page: "pokemon", id: p.id, tab: x.id })}
-              className={`inline-flex h-[30px] items-center gap-1.5 rounded-lg px-3 text-[0.84rem] ${tab === x.id ? "bg-panel text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted hover:text-fg"}`}
+              className={`inline-flex h-[30px] flex-none items-center gap-1.5 rounded-lg px-3 text-[0.84rem] max-[560px]:px-2.5 ${tab === x.id ? "bg-panel text-fg shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "text-muted hover:text-fg"}`}
             >
-              <span className="max-[420px]:hidden">{x.icon}</span>{x.label}
+              <span className="max-[560px]:hidden">{x.icon}</span>{x.label}
             </a>
           ))}
         </div>
@@ -65,7 +67,7 @@ export default function PokemonPage({ p, tab, plan, prev, next }) {
         )}
       </div>
 
-      {tab === "lieux" ? <LocationsTab p={p} /> : tab === "elevage" ? <Breeding key={p.id + (plan || "")} p={p} shared={plan} /> : <Overview p={p} />}
+      {tab === "capacites" ? <MovesTab p={p} /> : tab === "lieux" ? <LocationsTab p={p} /> : tab === "elevage" ? <Breeding key={p.id + (plan || "")} p={p} shared={plan} /> : <Overview p={p} />}
     </div>
   );
 }
