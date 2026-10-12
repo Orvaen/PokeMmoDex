@@ -15,6 +15,8 @@ const MovesListPage = lazy(() => import("./pages/MovesListPage.jsx"));
 const MovePage = lazy(() => import("./pages/MovePage.jsx"));
 const TeamPage = lazy(() => import("./pages/TeamPage.jsx"));
 const BerriesPage = lazy(() => import("./pages/BerriesPage.jsx"));
+const AbilityPage = lazy(() => import("./pages/AbilitiesPage.jsx"));
+const AbilitiesListPage = lazy(() => import("./pages/AbilitiesPage.jsx").then(m => ({ default: m.AbilitiesListPage })));
 import { Loading } from "./components/MoveBits.jsx";
 
 const DEFAULT_ID = 6;
@@ -98,6 +100,8 @@ export default function App() {
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
   else if (route.page === "natures") main = <NaturesPage />;
+  else if (route.page === "abilities") main = <AbilitiesListPage />;
+  else if (route.page === "ability") main = <AbilityPage name={route.name} />;
   else if (route.page === "berries") main = <BerriesPage group={route.group} />;
   else if (route.page === "moves") main = <MovesListPage />;
   else if (route.page === "move") main = <MovePage id={route.id} />;
@@ -105,7 +109,7 @@ export default function App() {
   else main = <NotFound />;
 
   // Remonte en haut à chaque changement de page
-  const scrollKey = route.page + (route.id || route.key || route.slug || "") + (route.tab || "");
+  const scrollKey = route.page + (route.id || route.key || route.slug || route.name || "") + (route.tab || "");
   useEffect(() => { document.getElementById("main")?.scrollTo(0, 0); }, [scrollKey]);
 
   return (

@@ -11,6 +11,7 @@ const TOOLS = [
   { key: "team", href: "#/equipe", pages: ["team"], label: "teamNav", icon: ico(<><circle cx="8" cy="9" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3 19c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5M14 15.2c.8-.5 1.6-.7 2.5-.7 2 0 3.6 1.3 4 4" /></>) },
   { key: "ev", href: "#/hordes-ev", pages: ["evhordes"], label: "evNav", icon: ico(<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" />) },
   { key: "berries", href: "#/baies", pages: ["berries"], label: "berriesNav", icon: ico(<><circle cx="12" cy="14.5" r="5.5" /><path d="M12 9V6.5c0-1.4 1-2.5 2.5-3M12 7.5C10.5 5 8 4.8 6.5 5.5 7 7.5 9 8.8 12 8.5" /></>) },
+  { key: "abilities", href: "#/talents", pages: ["abilities", "ability"], label: "abilitiesNav", icon: ico(<><path d="M12 3.5 14.4 9l5.6.5-4.3 3.7 1.3 5.6L12 15.9l-5 2.9 1.3-5.6L4 9.5 9.6 9z" /></>) },
   { key: "moves", href: "#/capacites", pages: ["moves", "move"], label: "movesNav", icon: ico(<><rect x="4" y="5" width="16" height="14" rx="3" /><path d="M8 10h8M8 14h5" /></>) },
   { key: "natures", href: "#/natures", pages: ["natures"], label: "naturesNav", icon: ico(<><path d="m7 11 5-5 5 5" /><path d="m7 18 5-5 5 5" opacity=".5" /></>) },
   { key: "tuto", href: "#/tutoriels", pages: ["tutorials"], label: "tutoTitle", icon: ico(<><rect x="3.5" y="5.5" width="17" height="13" rx="3" /><path d="m10.5 9.5 4 2.5-4 2.5z" /></>) },

@@ -1,5 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { abilityInfo } from "../lib/data.js";
+import { ALL, abilityInfo } from "../lib/data.js";
+import { href } from "../lib/router.js";
+
+const COUNT = new Map();
+for (const p of ALL) for (const a of new Set(p.abilities.filter(Boolean))) COUNT.set(a, (COUNT.get(a) || 0) + 1);
 import { abilName } from "../lib/breeding.js";
 import { useLang } from "../lib/i18n.js";
 
@@ -31,7 +35,7 @@ export default function AbilityTag({ name, hidden = false, size = "md", classNam
         aria-expanded={open}
         onClick={() => setOpen(o => !o)}
         onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
+        onBlur={e => { if (!ref.current?.contains(e.relatedTarget)) setOpen(false); }}
         className={`inline-flex items-center gap-2 rounded-xl border bg-panel ${sz} ${open ? "border-accent" : "border-line"} cursor-help`}
       >
         {abilName(name, lang)}
@@ -42,7 +46,7 @@ export default function AbilityTag({ name, hidden = false, size = "md", classNam
         <span
           role="tooltip"
           id={id}
-          className="anim-pop absolute bottom-[calc(100%+8px)] left-0 z-40 grid w-[min(300px,80vw)] gap-1.5 rounded-xl border border-line bg-panel p-3 text-left shadow-soft"
+          className="anim-pop absolute bottom-[calc(100%+8px)] left-0 z-40 before:absolute before:inset-x-0 before:-bottom-2.5 before:h-2.5 before:content-[''] grid w-[min(300px,80vw)] gap-1.5 rounded-xl border border-line bg-panel p-3 text-left shadow-soft"
         >
           <span className="text-[0.9rem] font-medium">
             {abilName(name, lang)}
@@ -50,6 +54,7 @@ export default function AbilityTag({ name, hidden = false, size = "md", classNam
           </span>
           <span className="text-[0.84rem] leading-snug text-muted">{desc || t.abilityCustom}</span>
           {detail && <span className="border-t border-line pt-1.5 text-[0.76rem] leading-snug text-faint"><b className="font-medium">{t.abilityDetail} :</b> {detail}</span>}
+          <a href={href({ page: "ability", name })} className="text-[0.8rem] font-medium text-accent-ink hover:underline">{t.abilitySeeAll(COUNT.get(name) || 0)}</a>
         </span>
       )}
     </span>

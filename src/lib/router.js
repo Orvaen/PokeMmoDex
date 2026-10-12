@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 //   #/pokemon/94/capacites  → capacités du Pokémon
 //   #/capacites, #/capacite/89 → liste des capacités, page d'une capacité
 //   #/equipe (?t=… : équipe partagée par lien)
-//   #/tutoriels, #/hordes-ev, #/natures, #/baies (?c=ev : une famille)
+//   #/tutoriels, #/hordes-ev, #/natures, #/baies (?c=ev : une famille), #/talents, #/talent/<nom>
 //   #/a-propos, #/mentions-legales, #/confidentialite, #/cookies
 export const LEGAL_PAGES = ["a-propos", "mentions-legales", "confidentialite", "cookies"];
 const TABS = ["fiche", "capacites", "lieux", "elevage"];
@@ -29,6 +29,8 @@ export function parseHash(hash) {
   if (parts[0] === "tutoriels") return { page: "tutorials" };
   if (parts[0] === "hordes-ev") return { page: "evhordes" };
   if (parts[0] === "natures") return { page: "natures" };
+  if (parts[0] === "talents") return { page: "abilities" };
+  if (parts[0] === "talent" && parts[1]) return { page: "ability", name: parts.slice(1).join("/") };
   if (parts[0] === "baies") return { page: "berries", group: params.get("c") || "" };
   if (parts[0] === "capacites") return { page: "moves" };
   if (parts[0] === "equipe") return { page: "team", team: params.get("t") };
@@ -44,6 +46,8 @@ export function href(route) {
   if (route.page === "tutorials") return "#/tutoriels";
   if (route.page === "evhordes") return "#/hordes-ev";
   if (route.page === "natures") return "#/natures";
+  if (route.page === "abilities") return "#/talents";
+  if (route.page === "ability") return `#/talent/${encodeURIComponent(route.name)}`;
   if (route.page === "berries") return "#/baies" + (route.group ? "?c=" + route.group : "");
   if (route.page === "moves") return "#/capacites";
   if (route.page === "team") return "#/equipe";
