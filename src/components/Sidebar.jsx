@@ -158,19 +158,38 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           </span>
         </div>
         <button type="button" onClick={() => setToolsOpen(o => !o)} aria-expanded={toolsOpen} aria-label={t.toggleTools}
-          className="group mt-2 flex h-6 items-center gap-1 px-2.5 text-left text-[0.74rem] text-faint hover:text-muted">
+          className="group mt-1.5 flex h-6 items-center gap-1 px-2.5 text-left text-[0.74rem] text-faint hover:text-muted">
           {t.toolsNav}
           <span className={`opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 ${toolsOpen ? "" : "-rotate-90 opacity-100"}`}>{Icon.chevDown}</span>
         </button>
-        {toolsOpen && TOOLS.map(tool => {
-          const on = tool.pages.includes(route?.page);
-          return (
-            <a key={tool.key} href={tool.href} aria-current={on ? "page" : undefined} className={row(on)}>
-              {tool.icon}
-              <span className="truncate">{t[tool.label]}</span>
-            </a>
-          );
-        })}
+        {toolsOpen ? (
+          // Ouvert : grille sur deux colonnes, deux fois moins haute qu'une liste
+          <div className="grid grid-cols-2 gap-px">
+            {TOOLS.map(tool => {
+              const on = tool.pages.includes(route?.page);
+              return (
+                <a key={tool.key} href={tool.href} title={t[tool.label]} aria-current={on ? "page" : undefined}
+                  className={`flex h-7 min-w-0 items-center gap-2 rounded-lg px-2 text-[0.82rem] transition-colors ${on ? "bg-sunk font-medium text-fg" : "text-muted hover:bg-sunk/70 hover:text-fg"}`}>
+                  <span className="flex-none [&>svg]:size-[15px]">{tool.icon}</span>
+                  <span className="truncate">{t[tool.label]}</span>
+                </a>
+              );
+            })}
+          </div>
+        ) : (
+          // Replié : une seule ligne d'icônes, le nom s'affiche au survol
+          <div className="flex flex-wrap gap-px">
+            {TOOLS.map(tool => {
+              const on = tool.pages.includes(route?.page);
+              return (
+                <a key={tool.key} href={tool.href} title={t[tool.label]} aria-label={t[tool.label]} aria-current={on ? "page" : undefined}
+                  className={`grid size-7 place-items-center rounded-lg transition-colors ${on ? "bg-sunk text-fg" : "text-muted hover:bg-sunk/70 hover:text-fg"}`}>
+                  <span className="[&>svg]:size-[15px]">{tool.icon}</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       {/* Liste des Pokémon */}
