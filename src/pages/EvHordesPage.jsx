@@ -7,7 +7,7 @@ import { Dropdown, Icon, Sprite } from "../components/ui.jsx";
 import { placeName } from "../components/RegionMap.jsx";
 import { REGION_MAPS, accessPath, baseName, hasCenter } from "../data/maps.js";
 import { hmName, hmsFor } from "../data/hms.js";
-import { TIMES, condOf, fits } from "../lib/conditions.js";
+import { TIMES, condLabel, condOf, fits } from "../lib/conditions.js";
 
 const HORDE = RARITIES.indexOf("Horde");
 const EV_MAX = 252;
@@ -39,16 +39,6 @@ const SPOTS = (() => {
     return { ...s, species, center: centerInfo(s.loc), hms: hmsFor(s.loc, s.method) };
   });
 })();
-
-// Libellé court des conditions d'une espèce : « Nuit · Été, Automne »
-function condLabel(conds, t) {
-  const times = new Set(conds.flatMap(c => c.times));
-  const seasons = conds.some(c => c.season === null) ? null : [...new Set(conds.map(c => c.season))].sort();
-  const parts = [];
-  if (times.size < 3) parts.push(TIMES.filter(x => times.has(x)).map(x => t.timesOfDay[x]).join(", "));
-  if (seasons && seasons.length < 4) parts.push(seasons.length === 3 ? t.exceptSeason(t.seasons[[0, 1, 2, 3].find(i => !seasons.includes(i))]) : seasons.map(i => t.seasons[i]).join(", "));
-  return parts.join(" · ");
-}
 
 // Distance au Centre Pokémon le plus proche, en nombre de zones à traverser
 function centerInfo(locKey) {
