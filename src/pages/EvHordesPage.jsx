@@ -47,7 +47,7 @@ export default function EvHordesPage() {
   const [stat, setStat] = useStored("evStat", "spe");
   const [region, setRegion] = useState("");
   const [onlyPure, setOnlyPure] = useState(false);
-  const [nearOnly, setNearOnly] = useState(false);
+  const [leppa, setLeppa] = useState(""); // "" tous, "no" sans Baies Mepo, "yes" avec
   const [noHm, setNoHm] = useState(false);
   const [sort, setSort] = useState("yield");
 
@@ -67,11 +67,11 @@ export default function EvHordesPage() {
       })
       .filter(Boolean)
       .filter(c => !onlyPure || c.share === 1)
-      .filter(c => !nearOnly || c.center?.advice === "center")
+      .filter(c => !leppa || (leppa === "no" ? c.center && c.center.advice !== "leppa" : c.center?.advice === "leppa"))
       .filter(c => !noHm || c.hms.every(h => h.opt))
       .sort((a, b) => (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
         || b.share - a.share || b.best - a.best || a.minLv - b.minLv);
-  }, [stat, region, onlyPure, nearOnly, noHm, sort]);
+  }, [stat, region, onlyPure, leppa, noHm, sort]);
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-7 px-8 pb-16 pt-[22px] max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -121,14 +121,12 @@ export default function EvHordesPage() {
           >
             {t.evOnlyPure}
           </button>
-          <button
-            type="button"
-            aria-pressed={nearOnly}
-            onClick={() => setNearOnly(v => !v)}
-            className={`h-8 rounded-full border px-3 text-[0.82rem] ${nearOnly ? "border-transparent bg-accent-soft font-medium text-accent-ink" : "border-line text-muted hover:text-fg"}`}
-          >
-            {t.evNearOnly}
-          </button>
+          <div className="inline-flex gap-0.5 rounded-full border border-line p-0.5" role="group" aria-label={t.evLeppaLabel}>
+            {[["", t.evLeppaAll], ["no", t.evLeppaNo], ["yes", t.evLeppaYes]].map(([v, l]) => (
+              <button key={v || "all"} type="button" aria-pressed={leppa === v} onClick={() => setLeppa(v)}
+                className={`h-7 rounded-full px-3 text-[0.8rem] ${leppa === v ? "bg-accent-soft font-medium text-accent-ink" : "text-muted hover:text-fg"}`}>{l}</button>
+            ))}
+          </div>
           <button
             type="button"
             aria-pressed={noHm}
