@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { ALL, BY_ID, TYPES, norm, pad } from "./lib/data.js";
 import { LangContext, STRINGS, nameOf, useLang } from "./lib/i18n.js";
 import { useRoute } from "./lib/router.js";
@@ -7,14 +7,16 @@ import { wildAt } from "./lib/conditions.js";
 import Sidebar from "./components/Sidebar.jsx";
 import PokemonPage from "./pages/PokemonPage.jsx";
 import LocationPage from "./pages/LocationPage.jsx";
-import LegalPage from "./pages/LegalPage.jsx";
-import TutorialsPage from "./pages/TutorialsPage.jsx";
-import EvHordesPage from "./pages/EvHordesPage.jsx";
+const LegalPage = lazy(() => import("./pages/LegalPage.jsx"));
+const TutorialsPage = lazy(() => import("./pages/TutorialsPage.jsx"));
+const EvHordesPage = lazy(() => import("./pages/EvHordesPage.jsx"));
 import CardsPage from "./pages/CardsPage.jsx";
-import NaturesPage from "./pages/NaturesPage.jsx";
-import MovesListPage from "./pages/MovesListPage.jsx";
-import MovePage from "./pages/MovePage.jsx";
-import TeamPage from "./pages/TeamPage.jsx";
+const NaturesPage = lazy(() => import("./pages/NaturesPage.jsx"));
+const MovesListPage = lazy(() => import("./pages/MovesListPage.jsx"));
+const MovePage = lazy(() => import("./pages/MovePage.jsx"));
+const TeamPage = lazy(() => import("./pages/TeamPage.jsx"));
+const BerriesPage = lazy(() => import("./pages/BerriesPage.jsx"));
+import { Loading } from "./components/MoveBits.jsx";
 
 const DEFAULT_ID = 6;
 
@@ -89,6 +91,7 @@ export default function App() {
   else if (route.page === "tutorials") main = <TutorialsPage />;
   else if (route.page === "evhordes") main = <EvHordesPage />;
   else if (route.page === "natures") main = <NaturesPage />;
+  else if (route.page === "berries") main = <BerriesPage group={route.group} />;
   else if (route.page === "moves") main = <MovesListPage />;
   else if (route.page === "move") main = <MovePage id={route.id} />;
   else if (route.page === "team") main = <TeamPage key={route.team || "mine"} shared={route.team} />;
@@ -120,7 +123,7 @@ export default function App() {
               : `max-[860px]:fixed max-[860px]:inset-0 max-[860px]:z-20 max-[860px]:bg-bg max-[860px]:pb-[env(safe-area-inset-bottom)] max-[860px]:pt-[env(safe-area-inset-top)] max-[860px]:transition-transform max-[860px]:duration-300 ${open ? "" : "max-[860px]:invisible max-[860px]:translate-x-full"}`
           }`}
         >
-          {main}
+          <Suspense fallback={<Loading label={t.loading} />}>{main}</Suspense>
         </main>
       </div>
     </LangContext.Provider>

@@ -10,6 +10,7 @@ Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglai
 - **Planificateur d'élevage** : tu saisis les Pokémon que tu as déjà et le plan part de là. Saisie rapide : un clic par IV à 31 (ou `31/31/x/31/31/31`), nature choisie avec ▲ / ▼, talents en boutons. Étapes à faire dans l'ordre, bouton « Fait » qui met ta boîte à jour, nature et talent conseillés, liste des Pokémon à trouver, objets et coût estimé. **Partage par lien** : le plan et les Pokémon tiennent dans l'adresse, sans serveur
 - **Tutoriels** : vidéos YouTube classées par thème (débuter, argent, revanches d'arène, Ho-Oh et Red, élevage), liste dans `src/data/tutorials.js`
 - **Capacités** : onglet sur chaque fiche (par niveau, CT/CS, tuteur, œuf, évolution, STAB signalé), page de chaque capacité avec tous les Pokémon qui l'apprennent, liste des 559 capacités avec filtre « CT / CS seulement ». Chargé à la demande (`src/data/moves.json`)
+- **Baies** : les 64 Baies de PokeMMO classées par effet (baisse les EV, PP, soin, statut, résistance, combat…), avec les **3 graines à planter**, le temps de pousse et la récolte (`src/data/berries.json`, généré par `scripts/build-berries.mjs`)
 - **Natures** : tableau des 25 natures (stat augmentée / baissée) et recherche
 - **Talents** : description au survol (texte officiel français + détail), noms français officiels
 - Faiblesses (table des types Gen 5, sans Fée), évolutions, tiers PvP, EV donnés

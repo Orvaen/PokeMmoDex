@@ -201,6 +201,7 @@ export default function EvHordesPage() {
       )}
 
       <div className="grid max-w-[70ch] gap-2 border-t border-line pt-4 text-[0.82rem] text-faint">
+        <p><a href="#/baies?c=ev" className="font-medium text-accent-ink underline underline-offset-4">{t.evBerriesLink}</a></p>
         <p>{t.evAdvHelp}</p>
         <p>{t.hmNote}</p>
         <p>{t.evNote}</p>

@@ -73,12 +73,12 @@ export function MoveTable({ rows, extraLabel, stab = [] }) {
   );
 }
 
-export function Loading() {
+export function Loading({ label }) {
   const { t } = useLang();
   return (
     <div className="grid place-items-center gap-3 py-16 text-muted">
       <span className="anim-spin size-6 rounded-full border-2 border-line border-t-accent" />
-      {t.loadingMoves}
+      {label ?? t.loadingMoves}
     </div>
   );
 }
