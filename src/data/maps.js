@@ -184,6 +184,10 @@ export const AREAS = [
 // Nom de base d'un lieu des données : « Ilex Forest (Day/Morning) » → « Ilex Forest »
 export const baseName = en => en.replace(/\s*\(.*?\)\s*/g, " ").trim();
 
+// Villes de départ sans Centre Pokémon
+const NO_CENTER = new Set(["Pallet Town", "New Bark Town", "Littleroot Town", "Twinleaf Town", "Nuvema Town"]);
+export const hasCenter = node => node?.kind === "c" && !NO_CENTER.has(node.name);
+
 // Chemin le plus court depuis la ville (Centre Pokémon) la plus proche
 export function accessPath(regionIdx, target) {
   const map = REGION_MAPS[regionIdx];
@@ -193,12 +197,12 @@ export function accessPath(regionIdx, target) {
     (adj[a] ||= []).push({ to: b, ferry });
     (adj[b] ||= []).push({ to: a, ferry });
   }
-  if (map.nodes[target].kind === "c") return [target];
+  if (hasCenter(map.nodes[target])) return [target];
   const prev = { [target]: null };
   const queue = [target];
   while (queue.length) {
     const cur = queue.shift();
-    if (cur !== target && map.nodes[cur].kind === "c") {
+    if (cur !== target && hasCenter(map.nodes[cur])) {
       const path = [cur];
       let p = prev[cur];
       while (p != null) { path.push(p); p = prev[p]; }

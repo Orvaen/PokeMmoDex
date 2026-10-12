@@ -4,6 +4,8 @@ import { locName, nameOf, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { useStored } from "../lib/storage.js";
 import { Dropdown, Icon, Sprite } from "../components/ui.jsx";
+import { placeName } from "../components/RegionMap.jsx";
+import { REGION_MAPS, accessPath, baseName, hasCenter } from "../data/maps.js";
 
 const HORDE = RARITIES.indexOf("Horde");
 const EV_MAX = 252;
@@ -22,14 +24,30 @@ const SPOTS = (() => {
       if (!spot.species.some(s => s.p.id === p.id)) spot.species.push({ p, min, max });
     }
   }
-  return [...map.values()];
+  return [...map.values()].map(s => ({ ...s, center: centerInfo(s.loc) }));
 })();
+
+// Distance au Centre Pokémon le plus proche, en nombre de zones à traverser
+function centerInfo(locKey) {
+  const loc = LOCATIONS[locKey];
+  const base = baseName(loc.en);
+  const map = REGION_MAPS[loc.region];
+  const path = accessPath(loc.region, base);
+  if (!path || !hasCenter(map.nodes[path[0]])) return null;
+  const ferry = path.some((n, i) => i > 0 && map.edges.some(e => e.ferry && ((e.a === n && e.b === path[i - 1]) || (e.b === n && e.a === path[i - 1]))));
+  const steps = path.length - 1;
+  const advice = steps <= 1 && !ferry ? "center" : steps === 2 && !ferry ? "both" : "leppa";
+  return { city: path[0], steps, ferry, advice };
+}
+const ADV_RANK = { center: 0, both: 1, leppa: 2 };
 
 export default function EvHordesPage() {
   const { lang, t } = useLang();
   const [stat, setStat] = useStored("evStat", "spe");
   const [region, setRegion] = useState("");
   const [onlyPure, setOnlyPure] = useState(false);
+  const [nearOnly, setNearOnly] = useState(false);
+  const [sort, setSort] = useState("yield");
 
   useEffect(() => {
     document.documentElement.style.setProperty("--h", STAT_HUE[stat]);
@@ -47,8 +65,10 @@ export default function EvHordesPage() {
       })
       .filter(Boolean)
       .filter(c => !onlyPure || c.share === 1)
-      .sort((a, b) => b.share - a.share || b.best - a.best || a.minLv - b.minLv);
-  }, [stat, region, onlyPure]);
+      .filter(c => !nearOnly || c.center?.advice === "center")
+      .sort((a, b) => (sort === "near" ? (a.center?.steps ?? 99) + (a.center?.ferry ? 2 : 0) - (b.center?.steps ?? 99) - (b.center?.ferry ? 2 : 0) : 0)
+        || b.share - a.share || b.best - a.best || a.minLv - b.minLv);
+  }, [stat, region, onlyPure, nearOnly, sort]);
 
   return (
     <div className="mx-auto grid max-w-[1100px] grid-cols-[minmax(0,1fr)] gap-7 px-8 pb-16 pt-[22px] max-[860px]:px-4 max-[860px]:pt-3.5">
@@ -98,6 +118,21 @@ export default function EvHordesPage() {
           >
             {t.evOnlyPure}
           </button>
+          <button
+            type="button"
+            aria-pressed={nearOnly}
+            onClick={() => setNearOnly(v => !v)}
+            className={`h-8 rounded-full border px-3 text-[0.82rem] ${nearOnly ? "border-transparent bg-accent-soft font-medium text-accent-ink" : "border-line text-muted hover:text-fg"}`}
+          >
+            {t.evNearOnly}
+          </button>
+          <Dropdown
+            label={t.evSortBy}
+            value={sort}
+            active={sort !== "yield"}
+            onChange={setSort}
+            options={[{ value: "yield", label: t.evSortYield }, { value: "near", label: t.evSortNear }]}
+          />
           <span className="ml-auto text-[0.8rem] text-faint">{t.evCount(cards.length)}</span>
         </div>
       </div>
@@ -110,7 +145,10 @@ export default function EvHordesPage() {
         <p className="rounded-2xl border border-dashed border-line p-6 text-center text-muted">{t.evNone}</p>
       )}
 
-      <p className="max-w-[70ch] border-t border-line pt-4 text-[0.82rem] text-faint">{t.evNote}</p>
+      <div className="grid max-w-[70ch] gap-2 border-t border-line pt-4 text-[0.82rem] text-faint">
+        <p>{t.evAdvHelp}</p>
+        <p>{t.evNote}</p>
+      </div>
     </div>
   );
 }
@@ -146,6 +184,8 @@ function SpotCard({ c, stat }) {
           </div>
         </div>
 
+        <CenterRow c={c} region={loc.region} />
+
         <ul className="grid gap-1">
           {c.species.map(({ p, min, max }) => {
             const y = p.yields[stat];
@@ -171,3 +211,25 @@ function SpotCard({ c, stat }) {
     </li>
   );
 }
+
+// Ligne « Centre Pokémon » : distance et conseil Centre / Baies Mepo
+const ADV_STYLE = {
+  center: "bg-[oklch(0.62_0.13_150/0.16)] text-[oklch(0.56_0.13_150)]",
+  both: "bg-[oklch(0.75_0.13_80/0.2)] text-[oklch(0.6_0.12_70)]",
+  leppa: "bg-[oklch(0.62_0.17_25/0.15)] text-[oklch(0.6_0.17_25)]",
+};
+function CenterRow({ c, region }) {
+  const { lang, t } = useLang();
+  const ce = c.center;
+  if (!ce) return <p className="flex items-center gap-2 px-1 text-[0.78rem] text-faint">{CROSS}{t.evCenterUnknown}</p>;
+  const label = ce.steps === 0 ? t.evCenterHere : t.evCenterAt(placeName(region, ce.city, lang), ce.steps);
+  const adv = { center: t.evAdvCenter, both: t.evAdvBoth, leppa: t.evAdvLeppa }[ce.advice];
+  return (
+    <a href={href({ page: "location", key: c.loc })} title={t.accessTitle} className="flex items-center gap-2 rounded-lg px-1 text-[0.8rem] text-muted hover:text-fg">
+      {CROSS}
+      <span className="min-w-0 flex-1 leading-snug">{label}{ce.ferry ? ` · ${t.evFerry}` : ""}</span>
+      <span className={`flex-none rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${ADV_STYLE[ce.advice]}`}>{adv}</span>
+    </a>
+  );
+}
+const CROSS = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true" className="flex-none"><rect x="3.5" y="3.5" width="17" height="17" rx="4" /><path d="M12 8v8M8 12h8" /></svg>;
