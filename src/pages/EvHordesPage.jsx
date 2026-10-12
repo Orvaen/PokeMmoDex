@@ -7,21 +7,12 @@ import { Dropdown, Icon, Sprite } from "../components/ui.jsx";
 import { placeName } from "../components/RegionMap.jsx";
 import { REGION_MAPS, accessPath, baseName, hasCenter } from "../data/maps.js";
 import { hmName, hmsFor } from "../data/hms.js";
+import { TIMES, condOf, fits } from "../lib/conditions.js";
 
 const HORDE = RARITIES.indexOf("Horde");
 const EV_MAX = 252;
 // Couleur de l'interface selon la stat choisie
 const STAT_HUE = { hp: 25, atk: 55, def: 95, spa: 250, spd: 150, spe: 340 };
-
-// Conditions d'un lieu, lues dans son nom : « Route 39 (Night/Season1) » → nuit, été
-const TIMES = ["Morning", "Day", "Night"];
-function condOf(en) {
-  const tags = (en.match(/\(([^)]*)\)/)?.[1] || "").split("/");
-  const times = tags.filter(x => TIMES.includes(x));
-  const season = tags.find(x => /^Season\d$/.test(x));
-  return { times: times.length ? times : TIMES, season: season ? +season.slice(6) : null };
-}
-const fits = (cond, time, season) => (time === "" || cond.times.includes(time)) && (season === "" || cond.season === null || cond.season === +season);
 
 // Spots de horde : un par lieu (toutes variantes jour/nuit/saison réunies) et par méthode
 const SPOTS = (() => {

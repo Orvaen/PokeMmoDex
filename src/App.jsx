@@ -3,6 +3,7 @@ import { ALL, BY_ID, TYPES, norm, pad } from "./lib/data.js";
 import { LangContext, STRINGS, nameOf, useLang } from "./lib/i18n.js";
 import { useRoute } from "./lib/router.js";
 import { useStored } from "./lib/storage.js";
+import { wildAt } from "./lib/conditions.js";
 import Sidebar from "./components/Sidebar.jsx";
 import PokemonPage from "./pages/PokemonPage.jsx";
 import LocationPage from "./pages/LocationPage.jsx";
@@ -21,6 +22,7 @@ function matches(p, f) {
   if (f.gen && p.gen !== +f.gen) return false;
   if (f.type && !p.types.includes(f.type)) return false;
   if (f.obtainable && !p.obtainable) return false;
+  if ((f.season || f.time) && !wildAt(p, f.time, f.season)) return false;
   const raw = f.q.trim().replace(/^#/, "");
   if (!raw) return true;
   if (/^\d+$/.test(raw)) return String(p.id).startsWith(String(+raw)) || pad(p.id).startsWith(raw);
@@ -40,7 +42,7 @@ export default function App() {
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
   }, []);
-  const [filters, setFilters] = useState({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false });
+  const [filters, setFilters] = useState({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false, season: "", time: "" });
   const route = useRoute();
   const t = STRINGS[lang];
 

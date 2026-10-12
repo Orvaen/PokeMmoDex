@@ -4,6 +4,7 @@ import { nameOf, typeName, useLang } from "../lib/i18n.js";
 import { href } from "../lib/router.js";
 import { Dropdown, Icon, Sprite } from "./ui.jsx";
 import { useStored } from "../lib/storage.js";
+import { TIMES } from "../lib/conditions.js";
 
 const ico = d => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 const TOOLS = [
@@ -45,7 +46,7 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
   const listRef = useRef(null);
   const searchRef = useRef(null);
   const set = patch => setFilters(f => ({ ...f, ...patch }));
-  const dirty = filters.q || filters.gen || filters.type || filters.sort !== "num-asc" || filters.obtainable;
+  const dirty = filters.q || filters.gen || filters.type || filters.sort !== "num-asc" || filters.obtainable || filters.season || filters.time;
 
   // Garde la ligne sélectionnée visible
   useEffect(() => {
@@ -171,7 +172,7 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
       <div className="flex items-center gap-0.5 px-3 pb-1 pt-3">
         <span className="px-2.5 text-[0.74rem] text-faint">{t.showing(visible.length)}</span>
         <span className="flex-1" />
-        {dirty && <button type="button" className="h-6 rounded-md px-1.5 text-[0.74rem] text-faint hover:bg-sunk hover:text-fg" onClick={() => setFilters({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false })}>{t.reset}</button>}
+        {dirty && <button type="button" className="h-6 rounded-md px-1.5 text-[0.74rem] text-faint hover:bg-sunk hover:text-fg" onClick={() => setFilters({ q: "", gen: "", type: "", sort: "num-asc", obtainable: false, season: "", time: "" })}>{t.reset}</button>}
       </div>
       <div className="flex flex-wrap gap-0.5 px-3 pb-1.5">
         <Dropdown size="ghost" label={t.region} value={filters.gen} active={!!filters.gen} onChange={v => set({ gen: v })}
@@ -180,6 +181,10 @@ export default function Sidebar({ filters, setFilters, visible, currentId, onTog
           options={[{ value: "", label: t.allTypes }, { sep: true }, ...Object.keys(TYPES).map(k => ({ value: k, label: typeName(k, lang), color: TYPES[k].col }))]} />
         <Dropdown size="ghost" label={t.sortLbl} value={filters.sort} active={filters.sort !== "num-asc"} onChange={v => set({ sort: v })}
           options={[...sortKeys.slice(0, 3).map(k => ({ value: k, label: t.sort[k] })), { sep: true }, ...sortKeys.slice(3).map(k => ({ value: k, label: t.sort[k] }))]} />
+        <Dropdown size="ghost" label={t.seasonLbl} value={filters.season} active={!!filters.season} onChange={v => set({ season: v })}
+          options={[{ value: "", label: t.allSeasons }, { sep: true }, ...t.seasons.map((x, i) => ({ value: String(i), label: x }))]} />
+        <Dropdown size="ghost" label={t.timeLbl} value={filters.time} active={!!filters.time} onChange={v => set({ time: v })}
+          options={[{ value: "", label: t.allTimes }, { sep: true }, ...TIMES.map(x => ({ value: x, label: t.timesOfDay[x] }))]} />
         <button type="button" aria-pressed={filters.obtainable} onClick={() => set({ obtainable: !filters.obtainable })}
           className={`inline-flex h-7 items-center gap-1.5 rounded-lg px-2 text-[0.82rem] transition-colors hover:bg-sunk ${filters.obtainable ? "font-medium text-fg" : "text-muted hover:text-fg"}`}>
           <span className={`grid size-3.5 place-items-center rounded-[4px] border ${filters.obtainable ? "border-fg bg-fg text-panel" : "border-faint"}`}>

@@ -13,6 +13,7 @@ Pokédex et planificateur d'élevage pour **PokeMMO**, en français et en anglai
 - **Natures** : tableau des 25 natures (stat augmentée / baissée) et recherche
 - **Talents** : description au survol (texte officiel français + détail), noms français officiels
 - Faiblesses (table des types Gen 5, sans Fée), évolutions, tiers PvP, EV donnés
+- Filtres de la liste : région, type, tri, obtenables, **saison et moment de la journée** (Pokémon sauvages à ce moment-là)
 - Recherche par nom FR ou EN, avec ou sans accents, ou par numéro (`94`, `094`, `#94`)
 - Barre latérale sobre (lignes simples, icônes au trait, section « Outils » repliable), redimensionnable (glisser le bord, double-clic pour revenir) et masquable (bouton ou `Ctrl B`)
 - Clavier : `Ctrl K` pour chercher, `↑` `↓` dans la liste, `←` `→` pour changer de Pokémon
