@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "data": "node scripts/build-data.mjs ../pokemmo-data ../PokeMMO-Data ../pokemon-showdown && node scripts/build-berries.mjs ../pokemmo-data && node scripts/build-items.mjs ../pokemmo-data"
+    "data": "node scripts/build-data.mjs ../pokemmo-data ../PokeMMO-Data ../pokemon-showdown && node scripts/build-berries.mjs ../pokemmo-data && node scripts/build-items.mjs ../pokemmo-data",
+    "reddit": "node --import ./scripts/reddit/register.mjs scripts/reddit/build-posts.mjs"
   },
   "dependencies": {
     "react": "19.2.0",
