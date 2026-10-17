@@ -129,6 +129,13 @@ const fr = {
     ],
     rulesSource: "Règles tirées du wiki PokeMMO et de PikaMMO. Le prix des bracelets se règle dans le planificateur.",
   },
+  txt: {
+    copy: "Copier le plan en texte", copied: "Plan copié", hint: "Pour le coller dans ChatGPT, Discord ou un forum.",
+    title: (n, goal) => `Plan d'élevage PokeMMO : ${n} ${goal}`, link: "Lien du plan", toGet: "Pokémon de base à réunir",
+    owned: "Déjà possédés et utilisés", none: "aucun", holds: "tient", gives: "donne", other: "Autre espèce", any: "IV indifférents",
+    totals: (b, f, c) => `Total : ${b} accouplements, ${f} Pokémon à trouver, coût estimé ${c}.`,
+    rules: "Règles PokeMMO : les deux parents disparaissent ; un IV à 31 chez les deux parents donne toujours 31 ; un bracelet transmet l'IV de son porteur ; la Pierre Stase transmet la nature.",
+  },
   breedTitle: "Élever", eggOf: "Œuf :", eggGroups: "Groupes œuf", genderless: "Asexué", maleOnly: "Uniquement ♂", femaleOnly: "Uniquement ♀",
   cannotBreed: "Ce Pokémon ne peut pas se reproduire. Il faut le capturer.",
   roles: {
@@ -421,6 +428,13 @@ const en = {
       "Choosing the gender costs $5,000 for a 50/50 species, $10,000 for 75/25 and $25,000 for 87.5/12.5.",
     ],
     rulesSource: "Rules from the PokeMMO wiki and PikaMMO. Set the brace price in the planner.",
+  },
+  txt: {
+    copy: "Copy the plan as text", copied: "Plan copied", hint: "To paste it into ChatGPT, Discord or a forum.",
+    title: (n, goal) => `PokeMMO breeding plan: ${n} ${goal}`, link: "Plan link", toGet: "Base Pokémon to gather",
+    owned: "Already owned and used", none: "none", holds: "holds", gives: "gives", other: "Other species", any: "any IVs",
+    totals: (b, f, c) => `Total: ${b} breeds, ${f} Pokémon to find, estimated cost ${c}.`,
+    rules: "PokeMMO rules: both parents are consumed; a 31 IV in both parents always gives 31; a brace passes its holder's IV; the Everstone passes the nature.",
   },
   breedTitle: "Breed", eggOf: "Egg:", eggGroups: "Egg groups", genderless: "Genderless", maleOnly: "Male only", femaleOnly: "Female only",
   cannotBreed: "This Pokémon can't breed. You have to catch it.",

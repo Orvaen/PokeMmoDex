@@ -83,6 +83,7 @@ function Planner({ p, shared, switcher }) {
   const [shareName, setShareName] = useStored("shareName", "");
   const [copied, setCopied] = useState(false);
   const [imported, setImported] = useState(false);
+  const [textCopied, setTextCopied] = useState(false);
 
   const target = finals.find(f => f.id === targetId) || finals[0];
   const rec = recommend(target.stats);
@@ -155,6 +156,37 @@ function Planner({ p, shared, switcher }) {
   };
   const leaveShared = () => { location.hash = href({ page: "pokemon", id: p.id, tab: "elevage" }).slice(1); };
   const ready = sum ? sum.steps.flat().filter(n => n.kids.every(k => !k.kids)) : [];
+
+  // Plan en texte brut : lisible par une IA ou sur un forum, sans JavaScript
+  const copyText = async () => {
+    const x = t.txt;
+    const statList = l => STATS.filter(s => l.includes(s)).map(s => t.short[s]).join(", ");
+    const who = n => {
+      const g = n.gender === "F" ? "♀" : n.gender === "M" ? "♂" : "";
+      const name = n.owned ? `${nameOf(BY_ID.get(n.owned.species), lang)} (${t.ownedShort})` : n.spine ? nameOf(info.root, lang) : x.other;
+      const ivs = n.owned ? perfect(n.owned) : n.ivs;
+      const ivTxt = ivs.length ? `${ivs.length}×31 ${statList(ivs)}` : x.any;
+      const natKey = n.owned ? n.owned.nature : n.nat ? nature : null;
+      const nat = natKey ? ` + ${natName(natKey, lang)}` : "";
+      const item = n.item ? `, ${x.holds} ${n.item === "ever" ? t.everstone : t.braces[n.item]}` : "";
+      return `${g} ${name} [${ivTxt}${nat}]${item}`.trim();
+    };
+    const goalTxt = `${chosen.length}×31${natured ? " " + natName(nature, lang) : ""}`;
+    const colon = lang === "fr" ? " :" : ":";
+    const lines = [x.title(nameOf(target, lang), goalTxt), `${x.link}${colon} ${link}`, ""];
+    lines.push(`${x.owned}${colon}`);
+    if (sum.owned.length) sum.owned.forEach(l => lines.push(`- ${who(l)}`)); else lines.push(`- ${x.none}`);
+    lines.push("", `${x.toGet}${colon}`);
+    sum.toGet.forEach(l => lines.push(`- ${who(l)}`));
+    sum.steps.forEach((list, i) => {
+      lines.push("", `${t.step} ${i + 1} (${t.nBreeds(list.length)})${colon}`);
+      list.forEach((n, k) => lines.push(`${k + 1}. ${who(n.kids[0])}  ×  ${who(n.kids[1])}  →  ${x.gives} ${who({ ...n, item: null })}`));
+    });
+    lines.push("", x.totals(sum.breeds, sum.toGet.length, money(cost)), x.rules);
+    const text = lines.join("\n");
+    try { await navigator.clipboard.writeText(text); setTextCopied(true); setTimeout(() => setTextCopied(false), 2000); }
+    catch { window.prompt(x.copy, text); }
+  };
 
   return (
     <>
@@ -313,7 +345,10 @@ function Planner({ p, shared, switcher }) {
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="eyebrow">{showTree ? t.tree : t.todoTitle}</h3>
-              <button type="button" className="text-[0.82rem] text-muted underline underline-offset-4 hover:text-fg" onClick={() => setShowTree(s => !s)}>{showTree ? t.showSteps : t.showTree}</button>
+              <span className="flex flex-wrap items-center gap-3">
+                <button type="button" title={t.txt.hint} className={`${btnGhost} h-8`} onClick={copyText}>{textCopied ? `✓ ${t.txt.copied}` : t.txt.copy}</button>
+                <button type="button" className="text-[0.82rem] text-muted underline underline-offset-4 hover:text-fg" onClick={() => setShowTree(s => !s)}>{showTree ? t.showSteps : t.showTree}</button>
+              </span>
             </div>
             {showTree ? (
               <div className="max-h-[78vh] overflow-auto rounded-xl bg-sunk p-3 [scrollbar-width:thin]">
