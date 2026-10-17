@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ALL, BY_ID, STATS, STAT_COL, family, finalsFrom } from "../lib/data.js";
-import { NATURES, PRICE_DEFAULTS, abilName, abilityRanking, breedInfo, buildTree, natFx, natName, perfect, planSummary, recommend } from "../lib/breeding.js";
+import { NATURES, PRICE_DEFAULTS, abilName, abilityRanking, breedInfo, optimizeTree, natFx, natName, perfect, planSummary, recommend } from "../lib/breeding.js";
 import { nameOf, useLang } from "../lib/i18n.js";
 import { useStored } from "../lib/storage.js";
 import { href } from "../lib/router.js";
@@ -14,6 +14,17 @@ const DITTO = 132;
 const btn = "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[0.84rem]";
 const btnMain = `${btn} bg-fg font-medium text-bg hover:bg-accent-ink`;
 const btnGhost = `${btn} border border-line text-fg hover:border-accent`;
+
+// L'optimisation de l'arbre prend du temps : on garde les derniers résultats
+const treeCache = new Map();
+function cachedTree(pid, chosen, natured, ctx) {
+  const key = JSON.stringify([pid, chosen, natured, ctx.nature, ctx.box]);
+  if (!treeCache.has(key)) {
+    if (treeCache.size > 30) treeCache.delete(treeCache.keys().next().value);
+    treeCache.set(key, optimizeTree(chosen, natured, ctx));
+  }
+  return treeCache.get(key);
+}
 
 // Onglet Élevage : simulateur de pension ou planificateur d'arbre
 export default function Breeding({ p, shared }) {
@@ -108,7 +119,7 @@ function Planner({ p, shared, switcher }) {
 
   // ---------- Plan ----------
   const ctx = { box: myBox, nature, isFamily: id => famIds.has(id), isCompatible: id => allowedIds.has(id) };
-  const tree = chosen.length || natured ? buildTree(chosen, natured, ctx) : null;
+  const tree = chosen.length || natured ? cachedTree(p.id, chosen, natured, ctx) : null;
   const sum = tree ? planSummary(tree, info.gender.female) : null;
   const cost = sum ? sum.braceTotal * price.brace + sum.ever * price.ever + (sum.genderSel - sum.rareSel) * price.gender + sum.rareSel * price.rare : 0;
   const money = n => n.toLocaleString(lang === "fr" ? "fr-FR" : "en-US") + " $";

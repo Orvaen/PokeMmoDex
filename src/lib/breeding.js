@@ -152,10 +152,12 @@ export function buildTree(ivs, natured, ctx = null) {
   const box = ctx?.box || [];
 
   // Pokémon possédé qui remplit la demande (le plus « juste » possible pour ne pas gaspiller un meilleur)
-  function findOwned({ ivs, nat, spine, gender }) {
+  function findOwned({ ivs, nat, spine, gender, path }) {
     let best = null;
     for (const it of box) {
       if (used.has(it.id)) continue;
+      // Interdit dans tout un sous-arbre (recherche locale de optimizeTree)
+      if (ctx.forbid?.some(([pre, id]) => id === it.id && path.startsWith(pre))) continue;
       const p31 = perfect(it);
       if (!ivs.every(s => p31.includes(s))) continue;
       if (nat && it.nature !== ctx.nature) continue;
@@ -180,10 +182,10 @@ export function buildTree(ivs, natured, ctx = null) {
     return best;
   }
 
-  function node(ivs, nat, gender, spine, item) {
-    const n = { id: nid++, ivs, nat, gender, spine, item, kids: null, owned: null };
+  function node(ivs, nat, gender, spine, item, path = "r") {
+    const n = { id: nid++, ivs, nat, gender, spine, item, kids: null, owned: null, path };
     if (ctx && (ivs.length || nat)) {
-      const own = findOwned({ ivs, nat, spine, gender });
+      const own = findOwned({ ivs, nat, spine, gender, path });
       if (own) {
         used.add(own.id);
         n.owned = own;
@@ -204,7 +206,7 @@ export function buildTree(ivs, natured, ctx = null) {
           if (s > bestScore) { bestScore = s; x = c; }
         }
       }
-      n.kids = [node(without(ivs, x), true, "F", spine, "ever"), node(ivs, false, "M", false, x)];
+      n.kids = [node(without(ivs, x), true, "F", spine, "ever", path + "0"), node(ivs, false, "M", false, x, path + "1")];
     } else {
       let [x, y] = plan(ivs).pick;
       if (box.length) {
@@ -217,15 +219,54 @@ export function buildTree(ivs, natured, ctx = null) {
         }
       }
       // Hors lignée, le genre de la mère se décide selon ce qu'on possède
-      const A = node(without(ivs, y), false, spine ? "F" : null, spine, x);
+      const A = node(without(ivs, y), false, spine ? "F" : null, spine, x, path + "0");
       const aGender = spine ? "F" : A.owned && A.owned.gender !== "N" ? A.owned.gender : "F";
       A.gender = aGender;
-      const B = node(without(ivs, x), false, aGender === "F" ? "M" : "F", false, y);
+      const B = node(without(ivs, x), false, aGender === "F" ? "M" : "F", false, y, path + "1");
       n.kids = [A, B];
     }
     return n;
   }
   return node(ivs, natured, null, true, null);
+}
+
+// Le choix glouton peut « griller » un Pokémon possédé trop bas dans l'arbre.
+// Recherche locale : on interdit tour à tour chaque usage d'un Pokémon possédé et on garde l'arbre le moins coûteux.
+const treeScore = tree => {
+  let breeds = 0, toGet = 0;
+  walk(tree, n => { if (n.kids) breeds++; else if (!n.owned) toGet++; });
+  return breeds * 1000 + toGet;
+};
+export function optimizeTree(ivs, natured, ctx) {
+  const first = buildTree(ivs, natured, { ...ctx, forbid: [] });
+  if (!ctx?.box?.length) return first;
+  const deadline = Date.now() + 250; // reste réactif même avec une grosse boîte
+  let best = first, bestScore = treeScore(first);
+  // Recherche par niveaux : déplacer un Pokémon possédé peut d'abord coûter plus avant de rapporter,
+  // on garde donc à chaque niveau les quelques meilleurs arbres, même s'ils ne battent pas encore le record.
+  let frontier = [{ tree: first, forbid: [] }];
+  const seen = new Set();
+  for (let depth = 0; depth < 3 && frontier.length; depth++) {
+    const next = [];
+    for (const { tree, forbid } of frontier) {
+      const uses = [];
+      // Chaque usage peut être interdit à son nœud, ou dans le sous-arbre de son parent ou grand-parent
+      walk(tree, n => { if (n.owned) for (let k = n.path.length; k >= Math.max(2, n.path.length - 2); k--) uses.push([n.path.slice(0, k), n.owned.id]); });
+      for (const u of uses) {
+        if (Date.now() > deadline) return best;
+        const f = [...forbid, u];
+        const key = f.map(x => x.join(":")).sort().join("|");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const t = buildTree(ivs, natured, { ...ctx, forbid: f });
+        const sc = treeScore(t);
+        if (sc < bestScore) { best = t; bestScore = sc; }
+        next.push({ tree: t, forbid: f, sc });
+      }
+    }
+    frontier = next.sort((x, y) => x.sc - y.sc).slice(0, 4);
+  }
+  return best;
 }
 
 export function walk(n, fn) {
