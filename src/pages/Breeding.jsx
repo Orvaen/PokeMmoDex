@@ -8,13 +8,46 @@ import { decodePlan, encodePlan, shareUrl } from "../lib/share.js";
 import { Dropdown, Sprite } from "../components/ui.jsx";
 import PokemonForm from "../components/PokemonForm.jsx";
 import AbilityTag from "../components/AbilityTag.jsx";
+import DaycareSim from "./DaycareSim.jsx";
 
 const DITTO = 132;
 const btn = "inline-flex h-9 items-center gap-1.5 rounded-[10px] px-3 text-[0.84rem]";
 const btnMain = `${btn} bg-fg font-medium text-bg hover:bg-accent-ink`;
 const btnGhost = `${btn} border border-line text-fg hover:border-accent`;
 
+// Onglet Élevage : simulateur de pension ou planificateur d'arbre
 export default function Breeding({ p, shared }) {
+  const { lang, t } = useLang();
+  const [mode, setMode] = useStored("breedMode", "sim");
+  const info = useMemo(() => breedInfo(p), [p]);
+  const current = shared ? "plan" : mode;
+  const switcher = (
+    <div role="tablist" aria-label={t.dc.modeLabel} className="grid grid-cols-2 gap-1 rounded-[13px] bg-sunk p-1 sm:inline-grid sm:w-max">
+      {[["sim", t.dc.modeSim, t.dc.modeSimHint], ["plan", t.dc.modePlan, t.dc.modePlanHint]].map(([id, label, hint]) => (
+        <button key={id} type="button" role="tab" aria-selected={current === id} onClick={() => { if (shared && id === "sim") location.hash = href({ page: "pokemon", id: p.id, tab: "elevage" }).slice(1); setMode(id); }}
+          className={`grid rounded-[10px] px-4 py-1.5 text-left ${current === id ? "bg-panel shadow-[0_1px_2px_rgb(0_0_0/0.08)]" : "hover:bg-panel/50"}`}>
+          <span className={`text-[0.86rem] ${current === id ? "font-medium text-fg" : "text-muted"}`}>{label}</span>
+          <span className="text-[0.72rem] text-faint">{hint}</span>
+        </button>
+      ))}
+    </div>
+  );
+  if (current === "sim" && info.canBreed) {
+    const head = (
+      <div className="flex items-center gap-4">
+        <span className="grid size-[64px] flex-none place-items-center rounded-[18px] bg-accent-soft"><Sprite p={info.root} className="size-[56px]" /></span>
+        <div className="min-w-0">
+          <h1 className="text-balance text-[clamp(1.6rem,3.4vw,2.3rem)] font-light leading-[1.05] tracking-[-0.04em]">{t.dc.title} {nameOf(info.root, lang)}</h1>
+          <p className="mt-1 text-[0.86rem] text-muted">{t.eggOf} <b className="font-medium text-fg">{nameOf(info.root, lang)}</b> · {info.groups.map(g => t.egg[g] || g).join(" / ")}</p>
+        </div>
+      </div>
+    );
+    return <DaycareSim p={p} info={info} head={head} switcher={switcher} />;
+  }
+  return <Planner p={p} shared={shared} switcher={info.canBreed ? switcher : null} />;
+}
+
+function Planner({ p, shared, switcher }) {
   const { lang, t } = useLang();
   const info = useMemo(() => breedInfo(p), [p]);
   const finals = useMemo(() => finalsFrom(p), [p]);
@@ -126,6 +159,7 @@ export default function Breeding({ p, shared }) {
   return (
     <>
       {head}
+      {switcher}
 
       {isShared ? (
         <section className="grid gap-3 rounded-2xl border border-accent bg-accent-soft p-4">
