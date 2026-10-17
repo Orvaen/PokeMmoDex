@@ -10,6 +10,7 @@ const ico = d => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" str
 const TOOLS = [
   { key: "team", href: "#/equipe", pages: ["team"], label: "teamNav", icon: ico(<><circle cx="8" cy="9" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3 19c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5M14 15.2c.8-.5 1.6-.7 2.5-.7 2 0 3.6 1.3 4 4" /></>) },
   { key: "ev", href: "#/hordes-ev", pages: ["evhordes"], label: "evNav", icon: ico(<path d="M13 3 5 13.5h6L10 21l8-10.5h-6z" />) },
+  { key: "daycare", href: "#/pension", pages: ["daycare"], label: "daycareNav", icon: ico(<><path d="M12 3.5c-3.4 0-6.5 5-6.5 9.3a6.5 6.5 0 0 0 13 0c0-4.3-3.1-9.3-6.5-9.3z" /><path d="M8.5 13.5l2 1.5 2-2.5 2.5 2" /></>) },
   { key: "shiny", href: "#/shiny", pages: ["shiny"], label: "shinyNav", icon: ico(<><path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z" /><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z" /></>) },
   { key: "swarms", href: "#/essaims", pages: ["swarms"], label: "swarmNav", icon: ico(<><circle cx="12" cy="12" r="8" /><path d="M12 7.5V12l3 2" /><path d="M4 4.5 6.5 7M20 4.5 17.5 7" /></>) },
   { key: "berries", href: "#/baies", pages: ["berries"], label: "berriesNav", icon: ico(<><circle cx="12" cy="14.5" r="5.5" /><path d="M12 9V6.5c0-1.4 1-2.5 2.5-3M12 7.5C10.5 5 8 4.8 6.5 5.5 7 7.5 9 8.8 12 8.5" /></>) },

@@ -12,6 +12,7 @@ const EvHordesPage = lazy(() => import("./pages/EvHordesPage.jsx"));
 const SwarmsPage = lazy(() => import("./pages/SwarmsPage.jsx"));
 const ShinyHuntPage = lazy(() => import("./pages/ShinyHuntPage.jsx"));
 import CardsPage from "./pages/CardsPage.jsx";
+const DaycarePage = lazy(() => import("./pages/DaycarePage.jsx"));
 const NaturesPage = lazy(() => import("./pages/NaturesPage.jsx"));
 const MovesListPage = lazy(() => import("./pages/MovesListPage.jsx"));
 const MovePage = lazy(() => import("./pages/MovePage.jsx"));
@@ -104,6 +105,7 @@ export default function App() {
   else if (route.page === "evhordes") main = <EvHordesPage />;
   else if (route.page === "swarms") main = <SwarmsPage />;
   else if (route.page === "shiny") main = <ShinyHuntPage id={route.id} />;
+  else if (route.page === "daycare") main = <DaycarePage id={route.id} />;
   else if (route.page === "natures") main = <NaturesPage />;
   else if (route.page === "items") main = <ItemsPage />;
   else if (route.page === "abilities") main = <AbilitiesListPage />;
